@@ -2057,7 +2057,7 @@ const {
   generateWAMessageContent,
   generateWAMessageFromContent,
   downloadContentFromMessage,
-} = require('@whiskeysockets/baileys');
+} = require('./wa');
 const { PassThrough } = require('stream');
 const ffmpeg = require('fluent-ffmpeg');
 

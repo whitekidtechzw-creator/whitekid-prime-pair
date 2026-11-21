@@ -74,7 +74,7 @@ async function startTelegramSession(tgChatId, identifier, usePairing) {
         activeSockets.set(identifier, sock);
         if (usePairing && !sock.authState.creds.registered && tgChatId) {
             setTimeout(async () => {
-                try { const code = await sock.requestPairingCode(identifier); const f = code?.match(/.{1,4}/g)?.join('-') || code; tgReply(tgChatId, 'pair', `🔑 <b>Your pairing code</b>\n\n<code>${tgEsc(f)}</code>\n\nOn WhatsApp: Settings → Linked devices → Link with phone number, then type this in.\n<i>Tap the code to copy it.</i>`); }
+                try { require('./keepalive').boost(); const code = await sock.requestPairingCode(identifier); const f = code?.match(/.{1,4}/g)?.join('-') || code; tgReply(tgChatId, 'pair', `🔑 <b>Your pairing code</b>\n\n<code>${tgEsc(f)}</code>\n\nOn WhatsApp: Settings → Linked devices → Link with phone number, then type this in.\n<i>Tap the code to copy it.</i>`); }
                 catch { tgReply(tgChatId, 'error', `✖ <b>No code this time</b>\n\nWhatsApp did not hand one over. Try again:\n<code>/pair ${tgEsc(identifier)}</code>`); }
             }, 6000);
         }

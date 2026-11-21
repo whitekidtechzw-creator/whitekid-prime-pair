@@ -1,6 +1,6 @@
 {
   "name": "whitekid-prime",
-  "version": "7.1.0",
+  "version": "7.2.0",
   "description": "Whitekid Prime, a multi-device WhatsApp bot with a web pairing page",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,9 @@
     "check": "node --check index.js && node --check commands.js && node --check handler.js && node --check manager.js",
     "apicheck": "node apicheck.js"
   },
-  "engines": { "node": ">=18 <25" },
+  "engines": {
+    "node": ">=20 <25"
+  },
   "license": "Apache-2.0",
   "dependencies": {
     "@distube/ytdl-core": "^4.16.12",
@@ -35,6 +37,7 @@
     "ruhend-scraper": "^9.0.1",
     "sharp": "^0.33.5",
     "wa-sticker-formatter": "^4.4.4",
+    "whitekid-sockets": "github:whitekidtechzw-creator/whitekid-socket",
     "yt-search": "^2.12.1"
   }
 }
