@@ -1,6 +1,6 @@
 {
   "name": "whitekid-prime",
-  "version": "7.2.0",
+  "version": "7.3.0",
   "description": "Whitekid Prime, a multi-device WhatsApp bot with a web pairing page",
   "main": "index.js",
   "scripts": {

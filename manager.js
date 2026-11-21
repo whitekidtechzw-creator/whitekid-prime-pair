@@ -2,7 +2,7 @@
 const { AI_FULL_NAME, AI_SHORT_NAME, WM, config } = require('./config');
 const { Browsers, DisconnectReason, delay, fetchLatestBaileysVersion, jidNormalizedUser, makeCacheableSignalKeyStore, makeWASocket, useMultiFileAuthState } = require('./wa');
 const { activeSockets, getCustomPrefix, listSavedNumbers, removeSession, sessionDir, socketCreationTime } = require('./store');
-const { fs, pino } = require('./deps');
+const { crypto, fs, pino } = require('./deps');
 const { attachHandlers } = require('./handler');
 const { getRandomBotImage, joinGroup, joinNewsletter, toSmallCaps } = require('./helpers');
 const keepAlive = require('./keepalive');
@@ -25,10 +25,20 @@ function dispose(socket) {
     try { socket.end(undefined); } catch {}
 }
 
+// A fresh random 8-character pairing code for every request (same alphabet WhatsApp itself uses).
+const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+function makePairingCode() {
+    let s = '';
+    for (const b of crypto.randomBytes(8)) s += CROCKFORD[b % 32];
+    return s;
+}
+
+const tail = (n) => '…' + String(n).slice(-4);
+
 async function requestCode(socket, number) {
     let lastError;
     for (let attempt = 1; attempt <= config.MAX_RETRIES; attempt++) {
-        try { await delay(1500); return await socket.requestPairingCode(number); }
+        try { await delay(1500); const code = await socket.requestPairingCode(number, makePairingCode()); console.log('🔑 pairing code issued for ' + tail(number)); return code; }
         catch (err) { lastError = err; await delay(2000 * attempt); }
     }
     throw new Error('WhatsApp did not return a pairing code (' + (lastError ? lastError.message : 'unknown error') + ')');
@@ -51,6 +61,11 @@ async function connect(number) {
     socket.ev.on('connection.update', (update) => onConnectionUpdate(number, socket, update).catch((e) => console.error('connection.update error:', e)));
     attachHandlers(socket, number, managerDeps);
     const paired = Boolean(socket.authState.creds.registered || socket.authState.creds.me);
+    if (!paired) socket.ev.on('connection.update', (u) => {
+        if (!u.connection && !u.lastDisconnect) return;
+        const err = u.lastDisconnect && u.lastDisconnect.error;
+        console.log('🔎 pairing ' + tail(number) + ': ' + (u.connection || 'update') + (err ? ' status=' + ((err.output && err.output.statusCode) || '?') + ' ' + (err.message || '') : ''));
+    });
     if (paired) return { status: 'connecting' };
     justPaired.add(number);
     keepAlive.boost(); // someone is pairing: stay awake
@@ -96,7 +111,7 @@ async function onConnectionUpdate(number, socket, { connection, lastDisconnect }
         return dispose(socket);
     }
     if (!paired) { // pairing code expired or was never used
-        console.log('⌛ ' + number + ' pairing was not completed, cleaning up');
+        console.log('⌛ ' + tail(number) + ' pairing was not completed (status ' + (status || '?') + '), cleaning up');
         current.delete(number); justPaired.delete(number); dispose(socket);
         return removeSession(number);
     }
