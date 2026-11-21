@@ -67,482 +67,483 @@ case 'pair': {
 // ─── MENU ──────────────────────────────────────────────────────────────────
 case 'menu': {
     const uptime = getUptime(botStartTime), pluginsCount = await totalcmds(), datetime = getCurrentDateTime();
-    const menuText = `╔═══════════════════╗
-║ 𓆣⃟ *WHITEKID-PRIME* ║
-╚═════════════════════╝
+    const menuText = `╭━━━━━━━━━━━━━━━━━━━⬣
+┃ 𓆣⃟ *WHITEKID-PRIME*
+╰━━━━━━━━━━━━━━━━━━━⬣
 
-    ⟦ 𓆣 𝙎𝙔𝙎𝙏𝙀𝙈 𝙄𝙉𝙄𝙏 ⟧
-    ├─► 𝙊𝙒𝙉𝙀𝙍   : ᴡʜɪᴛᴇᴋɪᴅ ᴛᴇᴄʜ
-    ├─► 𝙐𝙎𝙀𝙍    : ${senderDisplayName}
-    ├─► 𝘾𝙈𝘿𝙎    : ${pluginsCount}
-    ├─► 𝙐𝙋𝙏𝙄𝙈𝙀  : ${uptime}
-    ├─► 𝙈𝙊𝘿𝙀    : ${isPublicMode() ? 'PUBLIC' : 'PRIVATE'}
-    └─► 𝙏𝙄𝙈𝙀    : ${datetime.time}
+╭━━〔 𓆣 𝙎𝙔𝙎𝙏𝙀𝙈 𝙄𝙉𝙄𝙏 〕━━⬣
+┃ 𓆣 𝙊𝙒𝙉𝙀𝙍   : ᴡʜɪᴛᴇᴋɪᴅ ᴛᴇᴄʜ
+┃ 𓆣 𝙐𝙎𝙀𝙍    : ${senderDisplayName}
+┃ 𓆣 𝘾𝙈𝘿𝙎    : ${pluginsCount}
+┃ 𓆣 𝙐𝙋𝙏𝙄𝙈𝙀  : ${uptime}
+┃ 𓆣 𝙈𝙊𝘿𝙀    : ${isPublicMode() ? 'PUBLIC' : 'PRIVATE'}
+┃ 𓆣 𝙏𝙄𝙈𝙀    : ${datetime.time}
+╰━━━━━━━━━━━━━━━⬣
 
 
-╓─〔 𓆣 𝙉𝙀𝙓𝙐𝙎 〕─╖
-║
-║ 𓆣 .prime_store
-╙─────────────╜
+╭━━〔 𓆣 𝙉𝙀𝙓𝙐𝙎 〕━━⬣
+┃
+┃ 𓆣 .prime_store
+╰━━━━━━━━━━━━━━━⬣
 
-╓─〔 𓆣 𝙌𝙐𝙊𝙏𝙀𝙎  〕─╖
-║
-║ 𓆣 .heartbreak
-║ 𓆣 .friendship
-║ 𓆣 .love
-║ 𓆣 .newyear
-║ 𓆣 .boyfriendsday
-║ 𓆣 .christmas
-║ 𓆣 .mothersday
-║
-╙─────────────╜
+╭━━〔 𓆣 𝙌𝙐𝙊𝙏𝙀𝙎 〕━━⬣
+┃
+┃ 𓆣 .heartbreak
+┃ 𓆣 .friendship
+┃ 𓆣 .love
+┃ 𓆣 .newyear
+┃ 𓆣 .boyfriendsday
+┃ 𓆣 .christmas
+┃ 𓆣 .mothersday
+┃
+╰━━━━━━━━━━━━━━━⬣
 
-╓──〔 𓆣 𝙂𝙀𝙉𝙀𝙍𝘼𝙇 〕──╖
-║
-║ 𓆣 .alive
-║ 𓆣 .ping
-║ 𓆣 .menu
-║ 𓆣 .owner
-║ 𓆣 .devdetails
-║ 𓆣 .repo
-║ 𓆣 .datetime
-║ 𓆣 .location
-║ 𓆣 .bot_info
-║ 𓆣 .bot_stats
-║ 𓆣 .uptime
-║ 𓆣 .pair
-║ 𓆣 .settings
-║ 𓆣 .prefix
-║ 𓆣 .report
-║ 𓆣 .active
-║ 𓆣 .countries
-║ 𓆣 .calc
-║ 𓆣 .google
-║ 𓆣 .fetch
-║ 𓆣 .help
-║ 𓆣 .dev
-║ 𓆣 .developer
-║ 𓆣 .setprefix
-║ 𓆣 .calculate
-║ 𓆣 .readmore
-║ 𓆣 .deleteme
-║ 𓆣 .autoview
-║ 𓆣 .voicestatus
-║
-╙──────────────╜
+╭━━〔 𓆣 𝙂𝙀𝙉𝙀𝙍𝘼𝙇 〕━━⬣
+┃
+┃ 𓆣 .alive
+┃ 𓆣 .ping
+┃ 𓆣 .menu
+┃ 𓆣 .owner
+┃ 𓆣 .devdetails
+┃ 𓆣 .repo
+┃ 𓆣 .datetime
+┃ 𓆣 .location
+┃ 𓆣 .bot_info
+┃ 𓆣 .bot_stats
+┃ 𓆣 .uptime
+┃ 𓆣 .pair
+┃ 𓆣 .settings
+┃ 𓆣 .prefix
+┃ 𓆣 .report
+┃ 𓆣 .active
+┃ 𓆣 .countries
+┃ 𓆣 .calc
+┃ 𓆣 .google
+┃ 𓆣 .fetch
+┃ 𓆣 .help
+┃ 𓆣 .dev
+┃ 𓆣 .developer
+┃ 𓆣 .setprefix
+┃ 𓆣 .calculate
+┃ 𓆣 .readmore
+┃ 𓆣 .deleteme
+┃ 𓆣 .autoview
+┃ 𓆣 .voicestatus
+┃
+╰━━━━━━━━━━━━━━━⬣
 
-╓─〔 𓆣 𝘼𝙄 // 𝘾𝙊𝙍𝙀 〕──╖
-║
-║ 𓆣 .ai
-║ 𓆣 .aion
-║ 𓆣 .aioff
-║ 𓆣 .aitoggle
-║ 𓆣 .gpt4
-║ 𓆣 .gemini
-║ 𓆣 .llama
-║ 𓆣 .deepseek
-║ 𓆣 .mathgpt
-║ 𓆣 .aicode
-║ 𓆣 .textdetect
-║ 𓆣 .imagine
-║ 𓆣 .aiimg
-║ 𓆣 .gptimage
-║ 𓆣 .vision
-║ 𓆣 .stablesd
-║ 𓆣 .sologo
-║ 𓆣 .nanobanana
-║ 𓆣 .veo
-║ 𓆣 .suno
-║ 𓆣 .txt2vid
-║ 𓆣 .txt2img
-║ 𓆣 .voice
-║ 𓆣 .voiceon
-║ 𓆣 .voiceoff
-║ 𓆣 .flux
-║ 𓆣 .dalle
-║ 𓆣 .txt2video
-║ 𓆣 .aivid
-║ 𓆣 .analyze
-║ 𓆣 .describe
-║ 𓆣 .yttranscribe
-║
-╙──────────────╜
+╭━━〔 𓆣 𝘼𝙄 // 𝘾𝙊𝙍𝙀 〕━━⬣
+┃
+┃ 𓆣 .ai
+┃ 𓆣 .aion
+┃ 𓆣 .aioff
+┃ 𓆣 .aitoggle
+┃ 𓆣 .gpt4
+┃ 𓆣 .gemini
+┃ 𓆣 .llama
+┃ 𓆣 .deepseek
+┃ 𓆣 .mathgpt
+┃ 𓆣 .aicode
+┃ 𓆣 .textdetect
+┃ 𓆣 .imagine
+┃ 𓆣 .aiimg
+┃ 𓆣 .gptimage
+┃ 𓆣 .vision
+┃ 𓆣 .stablesd
+┃ 𓆣 .sologo
+┃ 𓆣 .nanobanana
+┃ 𓆣 .veo
+┃ 𓆣 .suno
+┃ 𓆣 .txt2vid
+┃ 𓆣 .txt2img
+┃ 𓆣 .voice
+┃ 𓆣 .voiceon
+┃ 𓆣 .voiceoff
+┃ 𓆣 .flux
+┃ 𓆣 .dalle
+┃ 𓆣 .txt2video
+┃ 𓆣 .aivid
+┃ 𓆣 .analyze
+┃ 𓆣 .describe
+┃ 𓆣 .yttranscribe
+┃
+╰━━━━━━━━━━━━━━━⬣
 
-╓──〔 𓆣 𝘿𝙊𝙒𝙉𝙇𝙊𝘼𝘿𝙎 〕─╖
-║
-║ 𓆣 .song
-║ 𓆣 .play
-║ 𓆣 .video
-║ 𓆣 .ytmp4
-║ 𓆣 .tiktok
-║ 𓆣 .fb
-║ 𓆣 .ig
-║ 𓆣 .twitter
-║ 𓆣 .threads
-║ 𓆣 .igstory
-║ 𓆣 .spotify
-║ 𓆣 .gdrive
-║ 𓆣 .mediafire
-║ 𓆣 .apk
-║ 𓆣 .gitclone
-║ 𓆣 .snack
-║ 𓆣 .lyrics
-║ 𓆣 .ytt
-║ 𓆣 .website
-║ 𓆣 .aio
-║ 𓆣 .ytmp3
-║ 𓆣 .yta
-║ 𓆣 .lyric
-║ 𓆣 .lirik
-║ 𓆣 .alldown
-║ 𓆣 .facebook
-║ 𓆣 .ttdl
-║ 𓆣 .insta
-║ 𓆣 .x
-║ 𓆣 .twdl
-║ 𓆣 .mfdl
-║ 𓆣 .gitdl
-║ 𓆣 .googledrive
-║ 𓆣 .snackdl
-║ 𓆣 .downloadmovie
-║ 𓆣 .sm
-║ 𓆣 .silent
-║
-╙─────────────╜
+╭━━〔 𓆣 𝘿𝙊𝙒𝙉𝙇𝙊𝘼𝘿𝙎 〕━━⬣
+┃
+┃ 𓆣 .song
+┃ 𓆣 .play
+┃ 𓆣 .video
+┃ 𓆣 .ytmp4
+┃ 𓆣 .tiktok
+┃ 𓆣 .fb
+┃ 𓆣 .ig
+┃ 𓆣 .twitter
+┃ 𓆣 .threads
+┃ 𓆣 .igstory
+┃ 𓆣 .spotify
+┃ 𓆣 .gdrive
+┃ 𓆣 .mediafire
+┃ 𓆣 .apk
+┃ 𓆣 .gitclone
+┃ 𓆣 .snack
+┃ 𓆣 .lyrics
+┃ 𓆣 .ytt
+┃ 𓆣 .website
+┃ 𓆣 .aio
+┃ 𓆣 .ytmp3
+┃ 𓆣 .yta
+┃ 𓆣 .lyric
+┃ 𓆣 .lirik
+┃ 𓆣 .alldown
+┃ 𓆣 .facebook
+┃ 𓆣 .ttdl
+┃ 𓆣 .insta
+┃ 𓆣 .x
+┃ 𓆣 .twdl
+┃ 𓆣 .mfdl
+┃ 𓆣 .gitdl
+┃ 𓆣 .googledrive
+┃ 𓆣 .snackdl
+┃ 𓆣 .downloadmovie
+┃ 𓆣 .sm
+┃ 𓆣 .silent
+┃
+╰━━━━━━━━━━━━━━━⬣
 
-╓─〔 𓆣 𝙎𝙀𝘼𝙍𝘾𝙃 〕─╖
-║
-║ 𓆣 .weather
-║ 𓆣 .wiki
-║ 𓆣 .github
-║ 𓆣 .npm
-║ 𓆣 .whois
-║ 𓆣 .winfo
-║ 𓆣 .bible
-║ 𓆣 .quran
-║ 𓆣 .movie
-║ 𓆣 .dlmovie
-║ 𓆣 .smsubs
-║ 𓆣 .news
-║ 𓆣 .crypto
-║ 𓆣 .shazam
-║ 𓆣 .imdb
-║ 𓆣 .wallpaper
-║ 𓆣 .npmstalk
-║ 𓆣 .tgstalk
-║ 𓆣 .ytstalk
-║ 𓆣 .ttstalk
-║ 𓆣 .stalk
-║ 𓆣 .getpp
-║ 𓆣 .pp
-║ 𓆣 .profilepic
-║ 𓆣 .search
-║ 𓆣 .get
-║ 𓆣 .wikipedia
-║ 𓆣 .npmsearch
-║ 𓆣 .tiktokstalk
-║ 𓆣 .whatmusic
-║ 𓆣 .livefunfact
-║
-╙─────────────╜
+╭━━〔 𓆣 𝙎𝙀𝘼𝙍𝘾𝙃 〕━━⬣
+┃
+┃ 𓆣 .weather
+┃ 𓆣 .wiki
+┃ 𓆣 .github
+┃ 𓆣 .npm
+┃ 𓆣 .whois
+┃ 𓆣 .winfo
+┃ 𓆣 .bible
+┃ 𓆣 .quran
+┃ 𓆣 .movie
+┃ 𓆣 .dlmovie
+┃ 𓆣 .smsubs
+┃ 𓆣 .news
+┃ 𓆣 .crypto
+┃ 𓆣 .shazam
+┃ 𓆣 .imdb
+┃ 𓆣 .wallpaper
+┃ 𓆣 .npmstalk
+┃ 𓆣 .tgstalk
+┃ 𓆣 .ytstalk
+┃ 𓆣 .ttstalk
+┃ 𓆣 .stalk
+┃ 𓆣 .getpp
+┃ 𓆣 .pp
+┃ 𓆣 .profilepic
+┃ 𓆣 .search
+┃ 𓆣 .get
+┃ 𓆣 .wikipedia
+┃ 𓆣 .npmsearch
+┃ 𓆣 .tiktokstalk
+┃ 𓆣 .whatmusic
+┃ 𓆣 .livefunfact
+┃
+╰━━━━━━━━━━━━━━━⬣
 
-╓──〔 𓆣 𝙁𝙐𝙉 〕───╖
-║
-║ 𓆣 .joke
-║ 𓆣 .darkjoke
-║ 𓆣 .riddle
-║ 𓆣 .dare
-║ 𓆣 .truth
-║ 𓆣 .roast
-║ 𓆣 .quote
-║ 𓆣 .fact
-║ 𓆣 .advice
-║ 𓆣 .pickup
-║ 𓆣 .lovequote
-║ 𓆣 .waifu
-║ 𓆣 .meme
-║ 𓆣 .rizz
-║ 𓆣 .pickupline
-║ 𓆣 .gaming
-║
-╙──────────────╜
+╭━━〔 𓆣 𝙁𝙐𝙉 〕━━⬣
+┃
+┃ 𓆣 .joke
+┃ 𓆣 .darkjoke
+┃ 𓆣 .riddle
+┃ 𓆣 .dare
+┃ 𓆣 .truth
+┃ 𓆣 .roast
+┃ 𓆣 .quote
+┃ 𓆣 .fact
+┃ 𓆣 .advice
+┃ 𓆣 .pickup
+┃ 𓆣 .lovequote
+┃ 𓆣 .waifu
+┃ 𓆣 .meme
+┃ 𓆣 .rizz
+┃ 𓆣 .pickupline
+┃ 𓆣 .gaming
+┃
+╰━━━━━━━━━━━━━━━⬣
 
-╓─〔 𓆣 𝙄𝙈𝘼𝙂𝙀𝙎 〕───╖
-║
-║ 𓆣 .cat
-║ 𓆣 .dog
-║ 𓆣 .eightball
-║ 𓆣 .technews
-║ 𓆣 .funfact
-║ 𓆣 .tictactoe
-║ 𓆣 .game
-║ 𓆣 .spongebob
-║ 𓆣 .memetext
-║ 𓆣 .textgif
-║ 𓆣 .textmp4
-║ 𓆣 .fancy
-║ 𓆣 .nasa
-║ 𓆣 .gimage
-║ 𓆣 .googleimage
-║ 𓆣 .wp
-║ 𓆣 .4kwallpaper
-║ 𓆣 .4kwp
-║ 𓆣 .pinterest
-║ 𓆣 .pin
-║
-╙──────────────╜
+╭━━〔 𓆣 𝙄𝙈𝘼𝙂𝙀𝙎 〕━━⬣
+┃
+┃ 𓆣 .cat
+┃ 𓆣 .dog
+┃ 𓆣 .eightball
+┃ 𓆣 .technews
+┃ 𓆣 .funfact
+┃ 𓆣 .tictactoe
+┃ 𓆣 .game
+┃ 𓆣 .spongebob
+┃ 𓆣 .memetext
+┃ 𓆣 .textgif
+┃ 𓆣 .textmp4
+┃ 𓆣 .fancy
+┃ 𓆣 .nasa
+┃ 𓆣 .gimage
+┃ 𓆣 .googleimage
+┃ 𓆣 .wp
+┃ 𓆣 .4kwallpaper
+┃ 𓆣 .4kwp
+┃ 𓆣 .pinterest
+┃ 𓆣 .pin
+┃
+╰━━━━━━━━━━━━━━━⬣
 
-╓──〔 𓆣 𝘼𝙉𝙄𝙈𝙀 〕──╖
-║
-║ 𓆣 .animesearch
-║ 𓆣 .topanime
-║ 𓆣 .currentanime
-║ 𓆣 .animechar
-║ 𓆣 .samehadaku
-║ 𓆣 .anime
-║
-╙──────────────╜
+╭━━〔 𓆣 𝘼𝙉𝙄𝙈𝙀 〕━━⬣
+┃
+┃ 𓆣 .animesearch
+┃ 𓆣 .topanime
+┃ 𓆣 .currentanime
+┃ 𓆣 .animechar
+┃ 𓆣 .samehadaku
+┃ 𓆣 .anime
+┃
+╰━━━━━━━━━━━━━━━⬣
 
-╓─〔 𓆣 𝙏𝙊𝙊𝙇𝙎 〕────╖
-║
-║ 𓆣 .sticker
-║ 𓆣 .s
-║ 𓆣 .remini
-║ 𓆣 .removebg
-║ 𓆣 .wasted
-║ 𓆣 .jail
-║ 𓆣 .wanted
-║ 𓆣 .gun
-║ 𓆣 .brat
-║ 𓆣 .neon
-║ 𓆣 .qr
-║ 𓆣 .ssweb
-║ 𓆣 .vv
-║ 𓆣 .viewonce
-║ 𓆣 .rvo
-║ 𓆣 .catbox
-║ 𓆣 .url
-║ 𓆣 .shorturl
-║ 𓆣 .tinyurl
-║ 𓆣 .tourl
-║ 𓆣 .translate
-║ 𓆣 .tr
-║ 𓆣 .tts
-║ 𓆣 .bomb
-║ 𓆣 .togif
-║ 𓆣 .ocr
-║ 𓆣 .trackip
-║ 𓆣 .ipinfo
-║ 𓆣 .vcc
-║ 𓆣 .ccgen
-║ 𓆣 .obfuscate
-║ 𓆣 .obf
-║ 𓆣 .blurface
-║ 𓆣 .imagescanner
-║ 𓆣 .webcopier
-║ 𓆣 .webtozip
-║ 𓆣 .webp2mp4
-║ 𓆣 .webptomp4
-║ 𓆣 .telegraph
-║ 𓆣 .tph
-║ 𓆣 .uploadugu
-║ 𓆣 .uguu
-║ 𓆣 .toimg
-║ 𓆣 .stickertoimg
-║ 𓆣 .sticker2img
-║ 𓆣 .font
-║ 𓆣 .base64
-║ 𓆣 .units
-║
-╙────────────────╜
+╭━━〔 𓆣 𝙏𝙊𝙊𝙇𝙎 〕━━⬣
+┃
+┃ 𓆣 .sticker
+┃ 𓆣 .s
+┃ 𓆣 .remini
+┃ 𓆣 .removebg
+┃ 𓆣 .wasted
+┃ 𓆣 .jail
+┃ 𓆣 .wanted
+┃ 𓆣 .gun
+┃ 𓆣 .brat
+┃ 𓆣 .neon
+┃ 𓆣 .qr
+┃ 𓆣 .ssweb
+┃ 𓆣 .vv
+┃ 𓆣 .viewonce
+┃ 𓆣 .rvo
+┃ 𓆣 .catbox
+┃ 𓆣 .url
+┃ 𓆣 .shorturl
+┃ 𓆣 .tinyurl
+┃ 𓆣 .tourl
+┃ 𓆣 .translate
+┃ 𓆣 .tr
+┃ 𓆣 .tts
+┃ 𓆣 .bomb
+┃ 𓆣 .togif
+┃ 𓆣 .ocr
+┃ 𓆣 .trackip
+┃ 𓆣 .ipinfo
+┃ 𓆣 .vcc
+┃ 𓆣 .ccgen
+┃ 𓆣 .obfuscate
+┃ 𓆣 .obf
+┃ 𓆣 .blurface
+┃ 𓆣 .imagescanner
+┃ 𓆣 .webcopier
+┃ 𓆣 .webtozip
+┃ 𓆣 .webp2mp4
+┃ 𓆣 .webptomp4
+┃ 𓆣 .telegraph
+┃ 𓆣 .tph
+┃ 𓆣 .uploadugu
+┃ 𓆣 .uguu
+┃ 𓆣 .toimg
+┃ 𓆣 .stickertoimg
+┃ 𓆣 .sticker2img
+┃ 𓆣 .font
+┃ 𓆣 .base64
+┃ 𓆣 .units
+┃
+╰━━━━━━━━━━━━━━━⬣
 
-╓─〔 𓆣 𝙂𝙍𝙊𝙐𝙋 𝘼𝘿𝙈𝙄𝙉 〕─╖
-║
-║ 𓆣 .add
-║ 𓆣 .kick
-║ 𓆣 .promote
-║ 𓆣 .demote
-║ 𓆣 .open
-║ 𓆣 .close
-║ 𓆣 .tagall
-║ 𓆣 .link
-║ 𓆣 .admins
-║ 𓆣 .vcf
-║ 𓆣 .gcstatus
-║ 𓆣 .antilink
-║ 𓆣 .welcome
-║ 𓆣 .kickall
-║ 𓆣 .warn
-║ 𓆣 .bc
-║ 𓆣 .join
-║ 𓆣 .goodbye
-║ 𓆣 .tagactive
-║ 𓆣 .setgpp
-║ 𓆣 .setgname
-║ 𓆣 .autostatus
-║ 𓆣 .autoadd
-║ 𓆣 .mute
-║ 𓆣 .unmute
-║ 𓆣 .removeall
-║ 𓆣 .grouplink
-║ 𓆣 .invite
-║ 𓆣 .setgroupname
-║ 𓆣 .broadcast
-║ 𓆣 .spam
-║ 𓆣 .greet
-║ 𓆣 .desc
-║ 𓆣 .admin
-║ 𓆣 .bye
-║
-╙──────────────────╜
+╭━━〔 𓆣 𝙂𝙍𝙊𝙐𝙋 𝘼𝘿𝙈𝙄𝙉 〕━━⬣
+┃
+┃ 𓆣 .add
+┃ 𓆣 .kick
+┃ 𓆣 .promote
+┃ 𓆣 .demote
+┃ 𓆣 .open
+┃ 𓆣 .close
+┃ 𓆣 .tagall
+┃ 𓆣 .link
+┃ 𓆣 .admins
+┃ 𓆣 .vcf
+┃ 𓆣 .gcstatus
+┃ 𓆣 .antilink
+┃ 𓆣 .welcome
+┃ 𓆣 .kickall
+┃ 𓆣 .warn
+┃ 𓆣 .bc
+┃ 𓆣 .join
+┃ 𓆣 .goodbye
+┃ 𓆣 .tagactive
+┃ 𓆣 .setgpp
+┃ 𓆣 .setgname
+┃ 𓆣 .autostatus
+┃ 𓆣 .autoadd
+┃ 𓆣 .mute
+┃ 𓆣 .unmute
+┃ 𓆣 .removeall
+┃ 𓆣 .grouplink
+┃ 𓆣 .invite
+┃ 𓆣 .setgroupname
+┃ 𓆣 .broadcast
+┃ 𓆣 .spam
+┃ 𓆣 .greet
+┃ 𓆣 .desc
+┃ 𓆣 .admin
+┃ 𓆣 .bye
+┃
+╰━━━━━━━━━━━━━━━⬣
 
-╓───〔 𓆣 𝙊𝙒𝙉𝙀𝙍 〕─╖
-║
-║ 𓆣 .mode
-║ 𓆣 .ban
-║ 𓆣 .unban
-║ 𓆣 .bannedlist
-║ 𓆣 .bio
-║ 𓆣 .autoread
-║ 𓆣 .autorecord
-║ 𓆣 .antidelete
-║ 𓆣 .setpp
-║ 𓆣 .whitekid
-║ 𓆣 .savestatus
-║ 𓆣 .antidel
-║ 𓆣 .setbio
-║ 𓆣 .ram
-║ 𓆣 .system
-║ 𓆣 .cpu
-║ 𓆣 .store
-║
-╙────────────╜
+╭━━〔 𓆣 𝙊𝙒𝙉𝙀𝙍 〕━━⬣
+┃
+┃ 𓆣 .mode
+┃ 𓆣 .ban
+┃ 𓆣 .unban
+┃ 𓆣 .bannedlist
+┃ 𓆣 .bio
+┃ 𓆣 .autoread
+┃ 𓆣 .autorecord
+┃ 𓆣 .antidelete
+┃ 𓆣 .setpp
+┃ 𓆣 .whitekid
+┃ 𓆣 .savestatus
+┃ 𓆣 .antidel
+┃ 𓆣 .setbio
+┃ 𓆣 .ram
+┃ 𓆣 .system
+┃ 𓆣 .cpu
+┃ 𓆣 .store
+┃
+╰━━━━━━━━━━━━━━━⬣
 
-╓─〔 𓆣 𝙎𝙋𝙊𝙍𝙏𝙎 〕───╖
-║
-║ 𓆣 .soccer
-║ 𓆣 .nba
-║ 𓆣 .nfl
-║ 𓆣 .livescores
-║ 𓆣 .standings
-║ 𓆣 .teamsearch
-║ 𓆣 .playersearch
-║ 𓆣 .surebet
-║ 𓆣 .topscorers
-║ 𓆣 .upcomingmatches
-║ 𓆣 .soccerscores
-║ 𓆣 .live
-║ 𓆣 .score
-║ 𓆣 .bettips
-║ 𓆣 .upcoming
-║
-╙────────────────╜
+╭━━〔 𓆣 𝙎𝙋𝙊𝙍𝙏𝙎 〕━━⬣
+┃
+┃ 𓆣 .soccer
+┃ 𓆣 .nba
+┃ 𓆣 .nfl
+┃ 𓆣 .livescores
+┃ 𓆣 .standings
+┃ 𓆣 .teamsearch
+┃ 𓆣 .playersearch
+┃ 𓆣 .surebet
+┃ 𓆣 .topscorers
+┃ 𓆣 .upcomingmatches
+┃ 𓆣 .soccerscores
+┃ 𓆣 .live
+┃ 𓆣 .score
+┃ 𓆣 .bettips
+┃ 𓆣 .upcoming
+┃
+╰━━━━━━━━━━━━━━━⬣
 
-╓──〔 𓆣 𝙏𝙀𝙈𝙋 𝙈𝘼𝙄𝙇 〕──╖
-║
-║ 𓆣 .tempmail
-║ 𓆣 .tempinbox
-║ 𓆣 .readmail
-║ 𓆣 .delmail
-║ 𓆣 .tempmailgen
-║
-╙─────────────────╜
+╭━━〔 𓆣 𝙏𝙀𝙈𝙋 𝙈𝘼𝙄𝙇 〕━━⬣
+┃
+┃ 𓆣 .tempmail
+┃ 𓆣 .tempinbox
+┃ 𓆣 .readmail
+┃ 𓆣 .delmail
+┃ 𓆣 .tempmailgen
+┃
+╰━━━━━━━━━━━━━━━⬣
 
-╓─〔 𓆣 𝙇𝙊𝙂𝙊 𝙈𝘼𝙆𝙀𝙍 〕─╖
-║
-║ 𓆣 .logolist
-║ 𓆣 .logo
-║ 𓆣 .logos
-║
-╙─────────────────╜
+╭━━〔 𓆣 𝙇𝙊𝙂𝙊 𝙈𝘼𝙆𝙀𝙍 〕━━⬣
+┃
+┃ 𓆣 .logolist
+┃ 𓆣 .logo
+┃ 𓆣 .logos
+┃
+╰━━━━━━━━━━━━━━━⬣
 
-╓─〔 𓆣 𝙂𝘼𝙈𝙀𝙎 〕─╖
-║
-║ 𓆣 .dice
-║ 𓆣 .coinflip
-║ 𓆣 .flip
-║ 𓆣 .rps
-║ 𓆣 .slots
-║ 𓆣 .roulette
-║ 𓆣 .lottery
-║ 𓆣 .guess
-║ 𓆣 .trivia
-║ 𓆣 .scramble
-║ 𓆣 .mathquiz
-║ 𓆣 .emojiquiz
-║ 𓆣 .flagquiz
-║ 𓆣 .capitalquiz
-║ 𓆣 .answer
-║ 𓆣 .hangman
-║ 𓆣 .hm
-║ 𓆣 .blackjack
-║ 𓆣 .hit
-║ 𓆣 .stand
-║ 𓆣 .wyr
-║ 𓆣 .nhie
-║
-╙──────────────╜
+╭━━〔 𓆣 𝙂𝘼𝙈𝙀𝙎 〕━━⬣
+┃
+┃ 𓆣 .dice
+┃ 𓆣 .coinflip
+┃ 𓆣 .flip
+┃ 𓆣 .rps
+┃ 𓆣 .slots
+┃ 𓆣 .roulette
+┃ 𓆣 .lottery
+┃ 𓆣 .guess
+┃ 𓆣 .trivia
+┃ 𓆣 .scramble
+┃ 𓆣 .mathquiz
+┃ 𓆣 .emojiquiz
+┃ 𓆣 .flagquiz
+┃ 𓆣 .capitalquiz
+┃ 𓆣 .answer
+┃ 𓆣 .hangman
+┃ 𓆣 .hm
+┃ 𓆣 .blackjack
+┃ 𓆣 .hit
+┃ 𓆣 .stand
+┃ 𓆣 .wyr
+┃ 𓆣 .nhie
+┃
+╰━━━━━━━━━━━━━━━⬣
 
-╓─〔 𓆣 𝙁𝙐𝙉 〕─╖
-║
-║ 𓆣 .rate
-║ 𓆣 .ship
-║ 𓆣 .iqtest
-║ 𓆣 .fortune
-║ 𓆣 .horoscope
-║ 𓆣 .luckynumber
-║ 𓆣 .choose
-║ 𓆣 .who
-║ 𓆣 .dadjoke
-║ 𓆣 .pun
-║ 𓆣 .compliment
-║ 𓆣 .motivate
-║ 𓆣 .affirm
-║ 𓆣 .showerthought
-║ 𓆣 .twister
-║ 𓆣 .topic
-║
-╙──────────────╜
+╭━━〔 𓆣 𝙁𝙐𝙉 〕━━⬣
+┃
+┃ 𓆣 .rate
+┃ 𓆣 .ship
+┃ 𓆣 .iqtest
+┃ 𓆣 .fortune
+┃ 𓆣 .horoscope
+┃ 𓆣 .luckynumber
+┃ 𓆣 .choose
+┃ 𓆣 .who
+┃ 𓆣 .dadjoke
+┃ 𓆣 .pun
+┃ 𓆣 .compliment
+┃ 𓆣 .motivate
+┃ 𓆣 .affirm
+┃ 𓆣 .showerthought
+┃ 𓆣 .twister
+┃ 𓆣 .topic
+┃
+╰━━━━━━━━━━━━━━━⬣
 
-╓─〔 𓆣 𝙏𝙀𝙓𝙏 𝙁𝙐𝙉 〕─╖
-║
-║ 𓆣 .reverse
-║ 𓆣 .mock
-║ 𓆣 .clap
-║ 𓆣 .bubble
-║ 𓆣 .uwu
-║ 𓆣 .vaporwave
-║ 𓆣 .upsidedown
-║ 𓆣 .leet
-║ 𓆣 .rot13
-║ 𓆣 .morse
-║ 𓆣 .binary
-║ 𓆣 .hex
-║ 𓆣 .repeat
-║ 𓆣 .count
-║ 𓆣 .shuffle
-║ 𓆣 .palindrome
-║ 𓆣 .lorem
-║ 𓆣 .roman
-║
-╙──────────────╜
+╭━━〔 𓆣 𝙏𝙀𝙓𝙏 𝙁𝙐𝙉 〕━━⬣
+┃
+┃ 𓆣 .reverse
+┃ 𓆣 .mock
+┃ 𓆣 .clap
+┃ 𓆣 .bubble
+┃ 𓆣 .uwu
+┃ 𓆣 .vaporwave
+┃ 𓆣 .upsidedown
+┃ 𓆣 .leet
+┃ 𓆣 .rot13
+┃ 𓆣 .morse
+┃ 𓆣 .binary
+┃ 𓆣 .hex
+┃ 𓆣 .repeat
+┃ 𓆣 .count
+┃ 𓆣 .shuffle
+┃ 𓆣 .palindrome
+┃ 𓆣 .lorem
+┃ 𓆣 .roman
+┃
+╰━━━━━━━━━━━━━━━⬣
 
-╓─〔 𓆣 𝙐𝙏𝙄𝙇𝙄𝙏𝙄𝙀𝙎 〕─╖
-║
-║ 𓆣 .password
-║ 𓆣 .randcolor
-║ 𓆣 .uuid
-║ 𓆣 .timestamp
-║ 𓆣 .age
-║ 𓆣 .bmi
-║ 𓆣 .tip
-║ 𓆣 .discount
-║ 𓆣 .percent
-║ 𓆣 .daysleft
-║ 𓆣 .zodiac
-║ 𓆣 .worldtime
-║
-╙──────────────╜
+╭━━〔 𓆣 𝙐𝙏𝙄𝙇𝙄𝙏𝙄𝙀𝙎 〕━━⬣
+┃
+┃ 𓆣 .password
+┃ 𓆣 .randcolor
+┃ 𓆣 .uuid
+┃ 𓆣 .timestamp
+┃ 𓆣 .age
+┃ 𓆣 .bmi
+┃ 𓆣 .tip
+┃ 𓆣 .discount
+┃ 𓆣 .percent
+┃ 𓆣 .daysleft
+┃ 𓆣 .zodiac
+┃ 𓆣 .worldtime
+┃
+╰━━━━━━━━━━━━━━━⬣
 
 ${WK7 ? WK7.menuBlock(activePrefix) : ''}
 ⌁ 🤟🏼 whitekid ᴅᴇᴠ  •  ᴡʜɪᴛᴇᴋɪᴅ ᴘʀɪᴍᴇ ᴠ${config.VERSION}

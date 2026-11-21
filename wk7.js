@@ -108,9 +108,15 @@ def('sys', ['cmds', 'commands'], '[category]', async c => {
     for (const part of splitText(`${cat.icon} ${cat.title} (${cat.names.length})\n\n${rows.join('\n')}`, 3000)) await c.reply(part);
 });
 
+const fancy = t => String(t).toUpperCase().replace(/[A-Z]/g, c => String.fromCodePoint(0x1D63C + c.charCodeAt(0) - 65));
 function menuBlock(p = '.') {
-    const rows = [...CATS].map(([k, v]) => `║ 𓆣 ${p}cmds ${k}  ${v.icon} ${v.title} (${v.names.length})`).join('\n');
-    return `\n╓─〔 𓆣 𝙑7 𝙏𝙊𝙊𝙇𝙆𝙄𝙏 〕─╖\n║\n${rows}\n║\n║ 𓆣 ${p}apicheck  📡 API health (owner)\n╙──────────────────╜\n`;
+    const out = [];
+    for (const [, v] of CATS) {
+        out.push(`╭━━〔 𓆣 ${fancy('V7 ' + v.title)} 〕━━⬣`, '┃');
+        for (const n of v.names) out.push(`┃ 𓆣 ${p}${n}`);
+        out.push('┃', '╰━━━━━━━━━━━━━━━⬣', '');
+    }
+    return '\n' + out.join('\n');
 }
 
 module.exports = {
