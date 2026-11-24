@@ -13,12 +13,9 @@ const DATA_DIR = path.resolve(process.env.DATA_DIR || './data');
 
 const envList = v => String(v || '').split(',').map(s => s.replace(/[^0-9]/g, '')).filter(Boolean);
 
-const BOT_IMAGES = [
-    'https://files.catbox.moe/3hn4a7.jpg','https://files.catbox.moe/3hn4a7.jpg',
-'https://files.catbox.moe/3hn4a7.jpg','https://files.catbox.moe/3hn4a7.jpg',
-'https://files.catbox.moe/3hn4a7.jpg','https://files.catbox.moe/3hn4a7.jpg',
-'https://files.catbox.moe/3hn4a7.jpg','https://files.catbox.moe/3hn4a7.jpg'
-];
+// The Whitekid Prime emblem ships with the bot (assets/whitekid-prime.jpg), so it never depends on an outside host.
+const BOT_IMAGE = require('path').join(__dirname, 'assets', 'whitekid-prime.jpg');
+const BOT_IMAGES = [BOT_IMAGE];
 
 const AI_FULL_NAME = 'Whitekid Prime';
 
@@ -33,10 +30,9 @@ const config = {
     OWNER_NUMBERS: [DEVELOPER_NUMBER, ...envList(process.env.OWNER_NUMBERS)],
     OWNER_NAME: 'WhiteKid Tech',
     OWNER_TG: 'https://t.me/whitekid01', OWNER_WA: `https://wa.me/${DEVELOPER_NUMBER}`,
-    BOT_IMAGES, NEWSLETTER_JID: '120363425165511768@newsletter',
-    USER_CHANNEL_JID: '120363171743427809@newsletter',
-    USER_CHANNEL_URL: 'https://whatsapp.com/channel/0029Vb86qKOA89Mi8iCgNe1R', NEWSLETTER_NAME: 'Whitekid Prime bot',
-    RCD_IMAGE_PATH: 'https://files.catbox.moe/3hn4a7.jpg',
+    BOT_IMAGES, NEWSLETTER_JID: '',  // filled in at runtime from the channel link (see helpers.resolveChannelJid)
+    USER_CHANNEL_URL: 'https://whatsapp.com/channel/0029VbE9GwO2P59fKhOKUT3B', NEWSLETTER_NAME: 'Whitekid Prime bot',
+    RCD_IMAGE_PATH: BOT_IMAGE,
     WATERMARK: '\n',
     MAX_RETRIES: 3, OTP_EXPIRY: 300000,
     GROUP_INVITE_LINK: 'https://chat.whatsapp.com/BnGr96zHiz075lNTZzvRUN?s=cl&p=a&mlu=0',

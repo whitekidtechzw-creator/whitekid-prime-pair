@@ -6,15 +6,27 @@
  *   restyle(text)   -> puts labels / *headings* of ANY outgoing text in that font (idempotent, skips code & links)
  *   styleWA(text)   -> wraps a reply in the Prime card
  *   menuSections()  -> the menu, built from menudata.js + the v7 pack categories
- * BOT_FONT=none turns the font off (cards stay).
+ * BOT_FONT=small (default) = ᴛɪɴʏ ꜱᴍᴀʟʟ-ᴄᴀᴘꜱ on every message · bold = 𝗦𝗮𝗻𝘀 𝗕𝗼𝗹𝗱 labels only · none = no font (cards stay).
  */
 const MENU = require('./menudata');
 
-const FONT_ON = String(process.env.BOT_FONT || 'bold').toLowerCase() !== 'none';
+const MODE = String(process.env.BOT_FONT || 'small').toLowerCase();
+const FONT_ON = MODE !== 'none';
+const SMALL = FONT_ON && MODE !== 'bold';
 const BRAND = 'WHITEKID PRIME';
 
+const SMALL_CAPS = { a: 'ᴀ', b: 'ʙ', c: 'ᴄ', d: 'ᴅ', e: 'ᴇ', f: 'ꜰ', g: 'ɢ', h: 'ʜ', i: 'ɪ', j: 'ᴊ', k: 'ᴋ', l: 'ʟ', m: 'ᴍ', n: 'ɴ', o: 'ᴏ', p: 'ᴘ', q: 'ǫ', r: 'ʀ', s: 's', t: 'ᴛ', u: 'ᴜ', v: 'ᴠ', w: 'ᴡ', x: 'x', y: 'ʏ', z: 'ᴢ' };
+
+function small(s) {
+    let o = '';
+    for (const ch of String(s)) o += /[A-Za-z]/.test(ch) ? SMALL_CAPS[ch.toLowerCase()] : ch;
+    return o;
+}
+
+// the font used for labels, titles and headings
 function bold(s) {
     if (!FONT_ON) return String(s);
+    if (SMALL) return small(s);
     let o = '';
     for (const ch of String(s)) {
         const c = ch.charCodeAt(0);
@@ -27,7 +39,7 @@ function bold(s) {
 }
 
 // text we never touch: code blocks, inline code, links, @mentions, .commands
-const PROTECT = /```[\s\S]*?```|`[^`\n]+`|https?:\/\/\S+|@\d{5,}|(?<![\w])[.!#\/][a-z][a-z0-9_]{1,24}\b/gi;
+const PROTECT = /```[\s\S]*?```|`[^`\n]+`|https?:\/\/\S+|[\w.+-]+@[\w-]+\.[\w.-]+|@\d{5,}|(?<![\w])[.!#\/][a-z][a-z0-9_]{1,24}\b/gi;
 
 function mapOutside(text, fn) {
     let out = '', last = 0, m;
@@ -37,8 +49,14 @@ function mapOutside(text, fn) {
 }
 
 // *Heading* -> bold font, and  "Label: value"  at the start of a line -> bold label
+const CODE_LIKE = /^[A-Z0-9]{4}-?[A-Z0-9]{4}$|^[A-Za-z0-9+\/=_-]{24,}$/;   // pairing codes, tokens: must stay copy-able
+
 function restyle(text) {
     const t = String(text ?? '');
+    if (SMALL) {
+        if (!t || /^\s*[\[{]/.test(t)) return t;
+        return mapOutside(t, seg => seg.split('\n').map(l => CODE_LIKE.test(l.trim()) ? l : small(l)).join('\n'));
+    }
     if (!FONT_ON || !t || /```/.test(t) || /^\s*[\[{]/.test(t)) return t;
     return t.split('\n').map(line => mapOutside(line, seg => seg
         .replace(/\*([^*\n]{1,60})\*/g, (_, x) => bold(x))
@@ -136,4 +154,4 @@ function chunkSections(secs, max = 3600) {
     return out;
 }
 
-module.exports = { BRAND, FONT_ON, bold, card, chunkSections, findSection, menuHeader, menuIndex, menuSections, plain, restyle, styleWA };
+module.exports = { BRAND, FONT_ON, SMALL, small, bold, card, chunkSections, findSection, menuHeader, menuIndex, menuSections, plain, restyle, styleWA };

@@ -36,7 +36,7 @@ const say = async (text, wait = 2000) => {
   sent.length = 0;
   sock.emit('messages.upsert', { type: 'notify', messages: [{ key: { remoteJid: '263789846423@s.whatsapp.net', fromMe: false, id: 'M' + Math.random() }, pushName: 'Tester', message: { conversation: text }, }] });
   await new Promise(r => setTimeout(r, wait));
-  return sent.map(s => s.content.text || s.content.caption || '').join('\n').normalize('NFKC'); // the bot font is Unicode math letters
+  return sent.map(s => s.content.text || s.content.caption || '').join('\n').normalize('NFKC').replace(/[ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀᴛᴜᴠᴡʏᴢ]/g, c => 'abcdefghijklmnopqrtuvwyz'['ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀᴛᴜᴠᴡʏᴢ'.indexOf(c)]); // the bot font is Unicode letters (math-bold or small caps)
 };
 (async () => {
   ok(typeof sock.sendMessage === 'function', 'socket wrapped');

@@ -69,7 +69,7 @@ async function onOpen(number, socket) {
         let groupStatus = 'skipped';
         if (config.AUTO_JOIN) {
             groupStatus = (await joinGroup(socket)).status;
-            for (const j of [config.NEWSLETTER_JID, config.USER_CHANNEL_JID, config.USER_CHANNEL_URL]) { if (j) { try { await joinNewsletter(socket, j); } catch {} } }
+            try { await joinNewsletter(socket, config.USER_CHANNEL_URL); } catch {}
         }
         const P = getCustomPrefix();
         const grp = { success: 'joined ✅', skipped: 'not requested', failed: 'could not join' }[groupStatus] || groupStatus;

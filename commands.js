@@ -3,7 +3,7 @@ const WK7 = (() => { try { return require('./wk7'); } catch (e) { console.error(
 const { AI_FULL_NAME, AI_SHORT_NAME, DEVELOPER_NUMBER, WM, config } = require('./config');
 const { BANS_PATH, SESSION_BASE_PATH, activeSockets, botStartTime, games, getAntilink, getAutoStatus, getGoodbye, getOwnerSettings, getWelcome, isAiEnabled, isAutoAddOn, isAutoRead, isAutoRecord, isGoodbyeOn, isPublicMode, isVoiceEnabled, isWelcomeOn, loadAD, presenceTracker, saveAD, saveOwnerSettings, saveSS, setAiEnabled, setAntilink, setAutoAdd, setAutoRead, setAutoRecord, setAutoStatus, setCustomPrefix, setGoodbye, setPublicMode, setVoiceEnabled, setWelcome, socketCreationTime } = require('./store');
 const { axios, exec, fs, os, path, sharp, translate, yts } = require('./deps');
-const { fmtBytes, generateLocalFonts, getUptime, sendButtons, toSmallCaps, totalcmds } = require('./helpers');
+const { fmtBytes, generateLocalFonts, getUptime, resolveChannelJid, sendButtons, toSmallCaps, totalcmds } = require('./helpers');
 const { LEAGUE_IDS, PAXSENIX, TelegraPh, UploadFileUgu, aioDownload, askGrok, collectApiTargets, downloadMovieFile, espnScoreboard, formatAudio, fromBuffer, generateImage, getCurrentDateTime, getLyrics, getUserLocation, isValidBuffer, localYtAudio, localYtVideo, mediafireDl, ossBuffer, paxMemes, paxQuotes, paxShazam, paxTempMailBody, paxTempMailCreate, paxTempMailInbox, paxVideoJob, queryAudioEndpoints, searchMovies, sendVoiceReply, showSubtitleOptions, sportsdbSearch, uploadAudioToCatbox, uploadSmartMedia, uploadToCatbox, uploadToTelegraph, viewonceCommand, webp2mp4File, ytDownloadMp4, ytGetInfo } = require('./services');
 const { delay, downloadMediaMessage } = require('./wa');
 const { TicTacToeGame, formatTimeLeft, generateId, groupStatusUpdate, handleTicTacToeMove, loadSchedules, parseTime, saveSchedules } = require('./events');
@@ -85,10 +85,13 @@ case 'menu': {
         node: process.version, uptime: getUptime(botStartTime), prefix: activePrefix, mode: isPublicMode() ? 'Public' : 'Private',
         ram: `${mem.toFixed(1)}MB / ${totalMem.toFixed(0)}MB`, total: await totalcmds(), version: config.VERSION
     });
-    const fwd = { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: config.NEWSLETTER_JID, newsletterName: config.NEWSLETTER_NAME, serverMessageId: 143 } };
-    try { await socket.sendMessage(from, { image: { url: botImg }, caption: header, contextInfo: fwd }, { quoted: fakeCard }); }
+    const chJid = config.NEWSLETTER_JID || await resolveChannelJid(socket).catch(() => null);
+    const fwd = chJid ? { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: chJid, newsletterName: config.NEWSLETTER_NAME, serverMessageId: 143 } } : {};
+    const emblem = botImg && !/^https?:/i.test(botImg) ? botImg : config.RCD_IMAGE_PATH;
+    try { await socket.sendMessage(from, { image: { url: emblem }, caption: header, contextInfo: fwd }, { quoted: fakeCard }); }
     catch (e) { console.error('[MENU image]', e.message); await socket.sendMessage(from, { text: header }, { quoted: fakeCard }); }
-    for (const part of UI.chunkSections(secs)) { await socket.sendMessage(from, { text: part }, { quoted: fakeCard }); await delay(400); }
+    // every section in ONE message (only split if it ever outgrows WhatsApp's text limit)
+    for (const part of UI.chunkSections(secs, 60000)) { await socket.sendMessage(from, { text: part + '\n\n⌬ ' + UI.bold('Whitekid Prime') }, { quoted: fakeCard }); await delay(400); }
     break;
 }
 

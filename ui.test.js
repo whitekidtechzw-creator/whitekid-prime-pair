@@ -12,13 +12,16 @@ for (const n of AI.NAMES) ok(cases.has(n), `AI command ${n} has no case`);
 ok(cases.has('play') && cases.has('repo'), 'play and repo exist');
 
 // font + card
-const b = UI.bold('Hi 7'); ok(b !== 'Hi 7' && /^[^A-Za-z]+$/.test(b.replace(/ /g, '')), 'bold font applied: ' + b);
-ok(UI.restyle('*Title*\nUsage: .play x https://a.b/Usage: z').includes('https://a.b/Usage: z'), 'links untouched');
+const b = UI.bold('Hi 7'); ok(b !== 'Hi 7' && !/[A-Za-z]/.test(b), 'font applied: ' + b);
+ok(UI.restyle('Hello there, welcome') === 'ʜᴇʟʟᴏ ᴛʜᴇʀᴇ, ᴡᴇʟᴄᴏᴍᴇ', 'whole message is small caps');
+ok(UI.restyle('use .play faded now').includes('.play'), 'commands keep their normal letters');
+ok(UI.restyle('ABCD-1234') === 'ABCD-1234', 'pairing code stays copy-able');
+ok(UI.restyle('*Title*\nUsage: .play x https://a.b/Usage: z').includes('https://a.b/Usage:'), 'links untouched');
 ok(UI.restyle('```\nname: value\n```') === '```\nname: value\n```', 'code untouched');
 ok(UI.restyle(UI.restyle('Mode: x')) === UI.restyle('Mode: x'), 'restyle is idempotent');
 const st = UI.styleWA('✅ Done\nMode: Public'); ok(/┏━❖/.test(st) && /┗━/.test(st), 'card drawn');
 const secs = UI.menuSections('.', WK7); ok(secs.length >= 25, 'menu sections built: ' + secs.length);
-ok(UI.chunkSections(secs).every(c => c.length < 4200), 'menu chunks are a safe size');
+ok(UI.chunkSections(secs, 60000).length === 1, 'whole menu fits in ONE message: ' + UI.chunkSections(secs, 60000).map(c => c.length));
 ok(UI.findSection(secs, 'ai') && UI.findSection(secs, 'down'), 'menu <category> lookup');
 
 // AI: answer cleaning and fallback order (fetch mocked)
@@ -35,7 +38,10 @@ ok(!AI.good('<html>bad gateway</html>') && AI.good('Hello there'), 'html rejecte
     const none = await AI.handle('chatgpt', 'hello', {}); ok(none.error, 'clean error when everything is down');
     const use = await AI.handle('aitranslate', '', {}); ok(use.usage, 'usage shown');
     global.fetch = real;
-    const { sniffAudio } = require('./music');
+    const { sniffAudio, queryVariants } = require('./music');
+    const qv = queryVariants('nhepfutepfu by hulengende'); ok(qv.includes('nhepfutepfu hulengende') && qv.includes('nhepfutepfu'.length ? 'nhepfutepfu hulengende audio' : ''), 'play tries spellings without "by": ' + qv);
+    const H = require('./helpers'); ok(typeof H.resolveChannelJid === 'function', 'channel resolver exists');
+    const cfg = require('./config').config; ok(cfg.USER_CHANNEL_URL.endsWith('0029VbE9GwO2P59fKhOKUT3B'), 'new channel link set'); ok(require('fs').existsSync(cfg.RCD_IMAGE_PATH), 'bot emblem file exists');
     ok(sniffAudio(Buffer.concat([Buffer.from('ID3'), Buffer.alloc(20)])).kind === 'mp3', 'sniff mp3');
     ok(sniffAudio(Buffer.from('<html><body>error</body></html>')) === null, 'html is not audio');
     console.log(fails ? `UI TESTS FAILED (${fails})` : 'UI TESTS PASS');

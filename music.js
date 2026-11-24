@@ -29,6 +29,46 @@ function sniffAudio(buf) {
 
 const views = n => { const v = Number(n); return Number.isFinite(v) && v > 0 ? v.toLocaleString('en-US') : 'N/A'; };
 
+// "song by artist" and misspelt names often return nothing, so try several spellings of the same search
+function queryVariants(q) {
+    const raw = String(q).replace(/\s+/g, ' ').trim();
+    const noBy = raw.replace(/\s+(?:by|ft\.?|feat\.?|featuring|-|–|x)\s+/gi, ' ').trim();
+    const noPunct = noBy.replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+    const list = [raw, noBy, noPunct, noPunct + ' audio', noPunct + ' official video', noPunct + ' lyrics'];
+    const words = noPunct.split(' ');
+    if (words.length > 2) list.push(words.slice(0, 2).join(' '));
+    return [...new Set(list.filter(x => x.length > 1))];
+}
+
+const toTrack = v => ({ url: v.url || `https://www.youtube.com/watch?v=${v.videoId}`, title: v.title, duration: v.timestamp || v.duration || 'N/A', views: v.views, author: v.author && (v.author.name || v.author), thumb: v.thumbnail || v.image });
+
+// plain YouTube results page, for when yt-search is missing or broken
+async function scrapeYouTube(query) {
+    const { data } = await axios.get('https://www.youtube.com/results?search_query=' + encodeURIComponent(query) + '&hl=en', { timeout: 15000, headers: { 'user-agent': 'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36', 'accept-language': 'en-US,en;q=0.9' } });
+    const m = String(data).match(/var ytInitialData\s*=\s*(\{.+?\});\s*<\/script>/s);
+    if (!m) return [];
+    const out = [];
+    (function walk(o) {
+        if (!o || typeof o !== 'object' || out.length >= 10) return;
+        if (o.videoRenderer && o.videoRenderer.videoId) {
+            const v = o.videoRenderer, len = v.lengthText && v.lengthText.simpleText;
+            const secs = len ? len.split(':').reverse().reduce((t, x, i) => t + Number(x) * 60 ** i, 0) : undefined;
+            out.push({ videoId: v.videoId, title: v.title && v.title.runs && v.title.runs[0].text, timestamp: len, seconds: secs, author: { name: v.ownerText && v.ownerText.runs && v.ownerText.runs[0].text }, thumbnail: `https://i.ytimg.com/vi/${v.videoId}/hqdefault.jpg` });
+            return;
+        }
+        for (const k of Object.keys(o)) walk(o[k]);
+    })(JSON.parse(m[1]));
+    return out;
+}
+
+async function searchOne(query) {
+    let videos = [];
+    try { const r = await yts(query); videos = (r && r.videos) || []; } catch (e) { console.error('[MUSIC yt-search]', e.message); }
+    if (!videos.length) { try { videos = await scrapeYouTube(query); } catch (e) { console.error('[MUSIC youtube page]', e.message); } }
+    const v = videos.find(x => x && x.title && (x.seconds === undefined || x.seconds <= 3 * 3600));
+    return v ? toTrack(v) : null;
+}
+
 async function findTrack(q) {
     const m = String(q).match(YT_ID);
     try {
@@ -37,10 +77,18 @@ async function findTrack(q) {
             if (v && v.title) return { url: `https://www.youtube.com/watch?v=${m[1]}`, title: v.title, duration: v.timestamp || 'N/A', views: v.views, author: v.author && v.author.name, thumb: v.thumbnail || v.image };
             return { url: `https://www.youtube.com/watch?v=${m[1]}`, title: 'YouTube audio', duration: 'N/A', thumb: `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg` };
         }
-        const r = await yts(String(q));
-        const v = r && r.videos && r.videos.find(x => x.seconds === undefined || x.seconds <= 3 * 3600);
-        if (v) return { url: v.url, title: v.title, duration: v.timestamp || 'N/A', views: v.views, author: v.author && v.author.name, thumb: v.thumbnail || v.image };
-    } catch (e) { console.error('[MUSIC search]', e.message); }
+    } catch (e) { console.error('[MUSIC link]', e.message); }
+    if (m) return { url: `https://www.youtube.com/watch?v=${m[1]}`, title: 'YouTube audio', duration: 'N/A', thumb: `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg` };
+    for (const query of queryVariants(q)) {
+        const t = await searchOne(query);
+        if (t) return t;
+    }
+    // last resort: the search-by-name download API can find tracks YouTube search can't
+    try {
+        const { data } = await axios.get(`${config.DAVID_API}/play?query=${encodeURIComponent(q)}&apikey=`, { timeout: 25000 });
+        const r = data && data.result;
+        if (r && r.download_url) return { url: r.video_url || r.url || r.download_url, title: r.title || String(q), duration: r.duration || 'N/A', author: r.channel || r.author, thumb: r.thumbnail, direct: r.download_url };
+    } catch (e) { console.error('[MUSIC api search]', e.message); }
     return null;
 }
 
@@ -51,6 +99,7 @@ async function fetchAudio(url) {
 
 async function getAudioBuffer(track) {
     const tried = [];
+    if (track.direct) { try { const b = await fetchAudio(track.direct); if (isValidBuffer(b) && sniffAudio(b)) return b; } catch (e) { tried.push('direct: ' + e.message); } }
     // 1. the search-by-name API (kept from the old engine)
     try {
         const { data } = await axios.get(`${config.DAVID_API}/play?query=${encodeURIComponent(track.title)}&apikey=`, { timeout: 25000 });
@@ -126,4 +175,4 @@ async function playVideo({ socket, from, fakeCard, q, reply, react, prefix }) {
     } catch (e) { await react('⚠️'); await reply(`⚠️ Video failed\n\n${e.message}. Try again in a minute.`); }
 }
 
-module.exports = { findTrack, playAudio, playVideo, sniffAudio };
+module.exports = { findTrack, playAudio, playVideo, queryVariants, scrapeYouTube, sniffAudio };

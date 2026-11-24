@@ -35,16 +35,30 @@ async function joinGroup(socket) {
     return { status: 'failed', error: 'Max retries' };
 }
 
-async function joinNewsletter(socket, jidOrUrl) {
+// channel link (or bare invite code) -> the code part, e.g. 0029VbE9GwO2P59fKhOKUT3B
+const channelCode = v => { const m = String(v || '').match(/whatsapp\.com\/channel\/([A-Za-z0-9_-]+)/i); return m ? m[1] : (/^[A-Za-z0-9_-]{16,}$/.test(String(v || '')) ? String(v) : null); };
+
+// A newsletter has to be followed by its JID (…@newsletter). Look the JID up from the invite code once, then remember it.
+let _channelJid = null;
+async function resolveChannelJid(socket, urlOrJid = config.USER_CHANNEL_URL) {
+    if (String(urlOrJid).endsWith('@newsletter')) return urlOrJid;
+    if (_channelJid && urlOrJid === config.USER_CHANNEL_URL) return _channelJid;
+    const code = channelCode(urlOrJid);
+    if (!code || typeof socket.newsletterMetadata !== 'function') return null;
     try {
-        const isUrl = typeof jidOrUrl === 'string' && jidOrUrl.startsWith('http');
-        if (isUrl) {
-            if (typeof socket.newsletterFollow === 'function') { await socket.newsletterFollow(jidOrUrl); console.log(`✅ Followed newsletter: ${jidOrUrl}`); return true; }
-            if (typeof socket.newsletterJoin === 'function') { await socket.newsletterJoin(jidOrUrl); return true; }
-        } else {
-            if (typeof socket.newsletterJoin === 'function') { await socket.newsletterJoin(jidOrUrl); console.log(`✅ Joined newsletter: ${jidOrUrl}`); return true; }
-            if (typeof socket.newsletterFollow === 'function') { await socket.newsletterFollow(jidOrUrl); return true; }
-        }
+        const meta = await socket.newsletterMetadata('invite', code);
+        const jid = meta && meta.id;
+        if (jid && urlOrJid === config.USER_CHANNEL_URL) { _channelJid = jid; config.NEWSLETTER_JID = jid; }
+        return jid || null;
+    } catch (e) { console.error('[NEWSLETTER lookup]', e.message); return null; }
+}
+
+async function joinNewsletter(socket, jidOrUrl = config.USER_CHANNEL_URL) {
+    try {
+        const jid = await resolveChannelJid(socket, jidOrUrl);
+        if (!jid) return false;
+        if (typeof socket.newsletterFollow === 'function') { await socket.newsletterFollow(jid); console.log(`✅ Followed newsletter: ${jid}`); return true; }
+        if (typeof socket.newsletterJoin === 'function') { await socket.newsletterJoin(jid); return true; }
         return false;
     } catch (e) { console.error(`[NEWSLETTER]`, e.message); return false; }
 }
@@ -131,4 +145,4 @@ const UI = require('./ui');
 
 function styleWA(raw, tone) { return UI.styleWA(raw, tone); }
 
-module.exports = { fmtBytes, generateLocalFonts, getRandomBotImage, getTS, getUptime, joinGroup, joinNewsletter, sendButtons, sendCarousel, sendListMessage, styleWA, toSmallCaps, totalcmds };
+module.exports = { fmtBytes, generateLocalFonts, getRandomBotImage, getTS, getUptime, joinGroup, joinNewsletter, resolveChannelJid, sendButtons, sendCarousel, sendListMessage, styleWA, toSmallCaps, totalcmds };
