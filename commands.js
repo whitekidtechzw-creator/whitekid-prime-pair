@@ -8,6 +8,9 @@ const { LEAGUE_IDS, PAXSENIX, TelegraPh, UploadFileUgu, aioDownload, askGrok, co
 const { delay, downloadMediaMessage } = require('./wa');
 const { TicTacToeGame, formatTimeLeft, generateId, groupStatusUpdate, handleTicTacToeMove, loadSchedules, parseTime, saveSchedules } = require('./events');
 const { wkQuoted, wkRun } = require('./games');
+const UI = require('./ui');
+const AI = require('./ai');
+const { playAudio, playVideo } = require('./music');
 
 async function runCommand(ctx) {
     let { activePrefix, args, body, botImg, command, count, fakeCard, from, isDevOverride, isGroup, isOwner, isSenderGroupAdmin, msg, nowsender, number, q, react, reply, replyCarousel, replyImg, requestPairing, senderDisplayName, senderNumber, sn, socket } = ctx;
@@ -66,491 +69,26 @@ case 'pair': {
 
 // ─── MENU ──────────────────────────────────────────────────────────────────
 case 'menu': {
-    const uptime = getUptime(botStartTime), pluginsCount = await totalcmds(), datetime = getCurrentDateTime();
-    const menuText = `╭━━━━━━━━━━━━━━━━━━━⬣
-┃ 𓆣⃟ *WHITEKID-PRIME*
-╰━━━━━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝙎𝙔𝙎𝙏𝙀𝙈 𝙄𝙉𝙄𝙏 〕━━⬣
-┃ 𓆣 𝙊𝙒𝙉𝙀𝙍   : ᴡʜɪᴛᴇᴋɪᴅ ᴛᴇᴄʜ
-┃ 𓆣 𝙐𝙎𝙀𝙍    : ${senderDisplayName}
-┃ 𓆣 𝘾𝙈𝘿𝙎    : ${pluginsCount}
-┃ 𓆣 𝙐𝙋𝙏𝙄𝙈𝙀  : ${uptime}
-┃ 𓆣 𝙈𝙊𝘿𝙀    : ${isPublicMode() ? 'PUBLIC' : 'PRIVATE'}
-┃ 𓆣 𝙏𝙄𝙈𝙀    : ${datetime.time}
-╰━━━━━━━━━━━━━━━⬣
-
-
-╭━━〔 𓆣 𝙉𝙀𝙓𝙐𝙎 〕━━⬣
-┃
-┃ 𓆣 .prime_store
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝙌𝙐𝙊𝙏𝙀𝙎 〕━━⬣
-┃
-┃ 𓆣 .heartbreak
-┃ 𓆣 .friendship
-┃ 𓆣 .love
-┃ 𓆣 .newyear
-┃ 𓆣 .boyfriendsday
-┃ 𓆣 .christmas
-┃ 𓆣 .mothersday
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝙂𝙀𝙉𝙀𝙍𝘼𝙇 〕━━⬣
-┃
-┃ 𓆣 .alive
-┃ 𓆣 .ping
-┃ 𓆣 .menu
-┃ 𓆣 .owner
-┃ 𓆣 .devdetails
-┃ 𓆣 .repo
-┃ 𓆣 .datetime
-┃ 𓆣 .location
-┃ 𓆣 .bot_info
-┃ 𓆣 .bot_stats
-┃ 𓆣 .uptime
-┃ 𓆣 .pair
-┃ 𓆣 .settings
-┃ 𓆣 .prefix
-┃ 𓆣 .report
-┃ 𓆣 .active
-┃ 𓆣 .countries
-┃ 𓆣 .calc
-┃ 𓆣 .google
-┃ 𓆣 .fetch
-┃ 𓆣 .help
-┃ 𓆣 .dev
-┃ 𓆣 .developer
-┃ 𓆣 .setprefix
-┃ 𓆣 .calculate
-┃ 𓆣 .readmore
-┃ 𓆣 .deleteme
-┃ 𓆣 .autoview
-┃ 𓆣 .voicestatus
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝘼𝙄 // 𝘾𝙊𝙍𝙀 〕━━⬣
-┃
-┃ 𓆣 .ai
-┃ 𓆣 .aion
-┃ 𓆣 .aioff
-┃ 𓆣 .aitoggle
-┃ 𓆣 .gpt4
-┃ 𓆣 .gemini
-┃ 𓆣 .llama
-┃ 𓆣 .deepseek
-┃ 𓆣 .mathgpt
-┃ 𓆣 .aicode
-┃ 𓆣 .textdetect
-┃ 𓆣 .imagine
-┃ 𓆣 .aiimg
-┃ 𓆣 .gptimage
-┃ 𓆣 .vision
-┃ 𓆣 .stablesd
-┃ 𓆣 .sologo
-┃ 𓆣 .nanobanana
-┃ 𓆣 .veo
-┃ 𓆣 .suno
-┃ 𓆣 .txt2vid
-┃ 𓆣 .txt2img
-┃ 𓆣 .voice
-┃ 𓆣 .voiceon
-┃ 𓆣 .voiceoff
-┃ 𓆣 .flux
-┃ 𓆣 .dalle
-┃ 𓆣 .txt2video
-┃ 𓆣 .aivid
-┃ 𓆣 .analyze
-┃ 𓆣 .describe
-┃ 𓆣 .yttranscribe
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝘿𝙊𝙒𝙉𝙇𝙊𝘼𝘿𝙎 〕━━⬣
-┃
-┃ 𓆣 .song
-┃ 𓆣 .play
-┃ 𓆣 .video
-┃ 𓆣 .ytmp4
-┃ 𓆣 .tiktok
-┃ 𓆣 .fb
-┃ 𓆣 .ig
-┃ 𓆣 .twitter
-┃ 𓆣 .threads
-┃ 𓆣 .igstory
-┃ 𓆣 .spotify
-┃ 𓆣 .gdrive
-┃ 𓆣 .mediafire
-┃ 𓆣 .apk
-┃ 𓆣 .gitclone
-┃ 𓆣 .snack
-┃ 𓆣 .lyrics
-┃ 𓆣 .ytt
-┃ 𓆣 .website
-┃ 𓆣 .aio
-┃ 𓆣 .ytmp3
-┃ 𓆣 .yta
-┃ 𓆣 .lyric
-┃ 𓆣 .lirik
-┃ 𓆣 .alldown
-┃ 𓆣 .facebook
-┃ 𓆣 .ttdl
-┃ 𓆣 .insta
-┃ 𓆣 .x
-┃ 𓆣 .twdl
-┃ 𓆣 .mfdl
-┃ 𓆣 .gitdl
-┃ 𓆣 .googledrive
-┃ 𓆣 .snackdl
-┃ 𓆣 .downloadmovie
-┃ 𓆣 .sm
-┃ 𓆣 .silent
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝙎𝙀𝘼𝙍𝘾𝙃 〕━━⬣
-┃
-┃ 𓆣 .weather
-┃ 𓆣 .wiki
-┃ 𓆣 .github
-┃ 𓆣 .npm
-┃ 𓆣 .whois
-┃ 𓆣 .winfo
-┃ 𓆣 .bible
-┃ 𓆣 .quran
-┃ 𓆣 .movie
-┃ 𓆣 .dlmovie
-┃ 𓆣 .smsubs
-┃ 𓆣 .news
-┃ 𓆣 .crypto
-┃ 𓆣 .shazam
-┃ 𓆣 .imdb
-┃ 𓆣 .wallpaper
-┃ 𓆣 .npmstalk
-┃ 𓆣 .tgstalk
-┃ 𓆣 .ytstalk
-┃ 𓆣 .ttstalk
-┃ 𓆣 .stalk
-┃ 𓆣 .getpp
-┃ 𓆣 .pp
-┃ 𓆣 .profilepic
-┃ 𓆣 .search
-┃ 𓆣 .get
-┃ 𓆣 .wikipedia
-┃ 𓆣 .npmsearch
-┃ 𓆣 .tiktokstalk
-┃ 𓆣 .whatmusic
-┃ 𓆣 .livefunfact
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝙁𝙐𝙉 〕━━⬣
-┃
-┃ 𓆣 .joke
-┃ 𓆣 .darkjoke
-┃ 𓆣 .riddle
-┃ 𓆣 .dare
-┃ 𓆣 .truth
-┃ 𓆣 .roast
-┃ 𓆣 .quote
-┃ 𓆣 .fact
-┃ 𓆣 .advice
-┃ 𓆣 .pickup
-┃ 𓆣 .lovequote
-┃ 𓆣 .waifu
-┃ 𓆣 .meme
-┃ 𓆣 .rizz
-┃ 𓆣 .pickupline
-┃ 𓆣 .gaming
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝙄𝙈𝘼𝙂𝙀𝙎 〕━━⬣
-┃
-┃ 𓆣 .cat
-┃ 𓆣 .dog
-┃ 𓆣 .eightball
-┃ 𓆣 .technews
-┃ 𓆣 .funfact
-┃ 𓆣 .tictactoe
-┃ 𓆣 .game
-┃ 𓆣 .spongebob
-┃ 𓆣 .memetext
-┃ 𓆣 .textgif
-┃ 𓆣 .textmp4
-┃ 𓆣 .fancy
-┃ 𓆣 .nasa
-┃ 𓆣 .gimage
-┃ 𓆣 .googleimage
-┃ 𓆣 .wp
-┃ 𓆣 .4kwallpaper
-┃ 𓆣 .4kwp
-┃ 𓆣 .pinterest
-┃ 𓆣 .pin
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝘼𝙉𝙄𝙈𝙀 〕━━⬣
-┃
-┃ 𓆣 .animesearch
-┃ 𓆣 .topanime
-┃ 𓆣 .currentanime
-┃ 𓆣 .animechar
-┃ 𓆣 .samehadaku
-┃ 𓆣 .anime
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝙏𝙊𝙊𝙇𝙎 〕━━⬣
-┃
-┃ 𓆣 .sticker
-┃ 𓆣 .s
-┃ 𓆣 .remini
-┃ 𓆣 .removebg
-┃ 𓆣 .wasted
-┃ 𓆣 .jail
-┃ 𓆣 .wanted
-┃ 𓆣 .gun
-┃ 𓆣 .brat
-┃ 𓆣 .neon
-┃ 𓆣 .qr
-┃ 𓆣 .ssweb
-┃ 𓆣 .vv
-┃ 𓆣 .viewonce
-┃ 𓆣 .rvo
-┃ 𓆣 .catbox
-┃ 𓆣 .url
-┃ 𓆣 .shorturl
-┃ 𓆣 .tinyurl
-┃ 𓆣 .tourl
-┃ 𓆣 .translate
-┃ 𓆣 .tr
-┃ 𓆣 .tts
-┃ 𓆣 .bomb
-┃ 𓆣 .togif
-┃ 𓆣 .ocr
-┃ 𓆣 .trackip
-┃ 𓆣 .ipinfo
-┃ 𓆣 .vcc
-┃ 𓆣 .ccgen
-┃ 𓆣 .obfuscate
-┃ 𓆣 .obf
-┃ 𓆣 .blurface
-┃ 𓆣 .imagescanner
-┃ 𓆣 .webcopier
-┃ 𓆣 .webtozip
-┃ 𓆣 .webp2mp4
-┃ 𓆣 .webptomp4
-┃ 𓆣 .telegraph
-┃ 𓆣 .tph
-┃ 𓆣 .uploadugu
-┃ 𓆣 .uguu
-┃ 𓆣 .toimg
-┃ 𓆣 .stickertoimg
-┃ 𓆣 .sticker2img
-┃ 𓆣 .font
-┃ 𓆣 .base64
-┃ 𓆣 .units
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝙂𝙍𝙊𝙐𝙋 𝘼𝘿𝙈𝙄𝙉 〕━━⬣
-┃
-┃ 𓆣 .add
-┃ 𓆣 .kick
-┃ 𓆣 .promote
-┃ 𓆣 .demote
-┃ 𓆣 .open
-┃ 𓆣 .close
-┃ 𓆣 .tagall
-┃ 𓆣 .link
-┃ 𓆣 .admins
-┃ 𓆣 .vcf
-┃ 𓆣 .gcstatus
-┃ 𓆣 .antilink
-┃ 𓆣 .welcome
-┃ 𓆣 .kickall
-┃ 𓆣 .warn
-┃ 𓆣 .bc
-┃ 𓆣 .join
-┃ 𓆣 .goodbye
-┃ 𓆣 .tagactive
-┃ 𓆣 .setgpp
-┃ 𓆣 .setgname
-┃ 𓆣 .autostatus
-┃ 𓆣 .autoadd
-┃ 𓆣 .mute
-┃ 𓆣 .unmute
-┃ 𓆣 .removeall
-┃ 𓆣 .grouplink
-┃ 𓆣 .invite
-┃ 𓆣 .setgroupname
-┃ 𓆣 .broadcast
-┃ 𓆣 .spam
-┃ 𓆣 .greet
-┃ 𓆣 .desc
-┃ 𓆣 .admin
-┃ 𓆣 .bye
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝙊𝙒𝙉𝙀𝙍 〕━━⬣
-┃
-┃ 𓆣 .mode
-┃ 𓆣 .ban
-┃ 𓆣 .unban
-┃ 𓆣 .bannedlist
-┃ 𓆣 .bio
-┃ 𓆣 .autoread
-┃ 𓆣 .autorecord
-┃ 𓆣 .antidelete
-┃ 𓆣 .setpp
-┃ 𓆣 .whitekid
-┃ 𓆣 .savestatus
-┃ 𓆣 .antidel
-┃ 𓆣 .setbio
-┃ 𓆣 .ram
-┃ 𓆣 .system
-┃ 𓆣 .cpu
-┃ 𓆣 .store
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝙎𝙋𝙊𝙍𝙏𝙎 〕━━⬣
-┃
-┃ 𓆣 .soccer
-┃ 𓆣 .nba
-┃ 𓆣 .nfl
-┃ 𓆣 .livescores
-┃ 𓆣 .standings
-┃ 𓆣 .teamsearch
-┃ 𓆣 .playersearch
-┃ 𓆣 .surebet
-┃ 𓆣 .topscorers
-┃ 𓆣 .upcomingmatches
-┃ 𓆣 .soccerscores
-┃ 𓆣 .live
-┃ 𓆣 .score
-┃ 𓆣 .bettips
-┃ 𓆣 .upcoming
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝙏𝙀𝙈𝙋 𝙈𝘼𝙄𝙇 〕━━⬣
-┃
-┃ 𓆣 .tempmail
-┃ 𓆣 .tempinbox
-┃ 𓆣 .readmail
-┃ 𓆣 .delmail
-┃ 𓆣 .tempmailgen
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝙇𝙊𝙂𝙊 𝙈𝘼𝙆𝙀𝙍 〕━━⬣
-┃
-┃ 𓆣 .logolist
-┃ 𓆣 .logo
-┃ 𓆣 .logos
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝙂𝘼𝙈𝙀𝙎 〕━━⬣
-┃
-┃ 𓆣 .dice
-┃ 𓆣 .coinflip
-┃ 𓆣 .flip
-┃ 𓆣 .rps
-┃ 𓆣 .slots
-┃ 𓆣 .roulette
-┃ 𓆣 .lottery
-┃ 𓆣 .guess
-┃ 𓆣 .trivia
-┃ 𓆣 .scramble
-┃ 𓆣 .mathquiz
-┃ 𓆣 .emojiquiz
-┃ 𓆣 .flagquiz
-┃ 𓆣 .capitalquiz
-┃ 𓆣 .answer
-┃ 𓆣 .hangman
-┃ 𓆣 .hm
-┃ 𓆣 .blackjack
-┃ 𓆣 .hit
-┃ 𓆣 .stand
-┃ 𓆣 .wyr
-┃ 𓆣 .nhie
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝙁𝙐𝙉 〕━━⬣
-┃
-┃ 𓆣 .rate
-┃ 𓆣 .ship
-┃ 𓆣 .iqtest
-┃ 𓆣 .fortune
-┃ 𓆣 .horoscope
-┃ 𓆣 .luckynumber
-┃ 𓆣 .choose
-┃ 𓆣 .who
-┃ 𓆣 .dadjoke
-┃ 𓆣 .pun
-┃ 𓆣 .compliment
-┃ 𓆣 .motivate
-┃ 𓆣 .affirm
-┃ 𓆣 .showerthought
-┃ 𓆣 .twister
-┃ 𓆣 .topic
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝙏𝙀𝙓𝙏 𝙁𝙐𝙉 〕━━⬣
-┃
-┃ 𓆣 .reverse
-┃ 𓆣 .mock
-┃ 𓆣 .clap
-┃ 𓆣 .bubble
-┃ 𓆣 .uwu
-┃ 𓆣 .vaporwave
-┃ 𓆣 .upsidedown
-┃ 𓆣 .leet
-┃ 𓆣 .rot13
-┃ 𓆣 .morse
-┃ 𓆣 .binary
-┃ 𓆣 .hex
-┃ 𓆣 .repeat
-┃ 𓆣 .count
-┃ 𓆣 .shuffle
-┃ 𓆣 .palindrome
-┃ 𓆣 .lorem
-┃ 𓆣 .roman
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-╭━━〔 𓆣 𝙐𝙏𝙄𝙇𝙄𝙏𝙄𝙀𝙎 〕━━⬣
-┃
-┃ 𓆣 .password
-┃ 𓆣 .randcolor
-┃ 𓆣 .uuid
-┃ 𓆣 .timestamp
-┃ 𓆣 .age
-┃ 𓆣 .bmi
-┃ 𓆣 .tip
-┃ 𓆣 .discount
-┃ 𓆣 .percent
-┃ 𓆣 .daysleft
-┃ 𓆣 .zodiac
-┃ 𓆣 .worldtime
-┃
-╰━━━━━━━━━━━━━━━⬣
-
-${WK7 ? WK7.menuBlock(activePrefix) : ''}
-⌁ 🤟🏼 whitekid ᴅᴇᴠ  •  ᴡʜɪᴛᴇᴋɪᴅ ᴘʀɪᴍᴇ ᴠ${config.VERSION}
-`;
-    await replyImg(botImg, menuText, [], true);
     await react('🌹');
-    // voice greeting removed
+    const secs = UI.menuSections(activePrefix, WK7);
+    const want = (args[0] || '').toLowerCase();
+    if (want) {
+        const one = UI.findSection(secs, want);
+        if (!one) { await socket.sendMessage(from, { text: UI.menuIndex(secs, activePrefix) }, { quoted: fakeCard }); break; }
+        await socket.sendMessage(from, { text: one.text + '\n\n⌬ ' + UI.bold('Whitekid Prime') }, { quoted: fakeCard });
+        break;
+    }
+    const mem = process.memoryUsage().rss / 1048576, totalMem = os.totalmem() / 1048576;
+    const header = UI.menuHeader({
+        user: senderDisplayName, owner: config.OWNER_NAME,
+        date: new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Harare' }),
+        node: process.version, uptime: getUptime(botStartTime), prefix: activePrefix, mode: isPublicMode() ? 'Public' : 'Private',
+        ram: `${mem.toFixed(1)}MB / ${totalMem.toFixed(0)}MB`, total: await totalcmds(), version: config.VERSION
+    });
+    const fwd = { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: config.NEWSLETTER_JID, newsletterName: config.NEWSLETTER_NAME, serverMessageId: 143 } };
+    try { await socket.sendMessage(from, { image: { url: botImg }, caption: header, contextInfo: fwd }, { quoted: fakeCard }); }
+    catch (e) { console.error('[MENU image]', e.message); await socket.sendMessage(from, { text: header }, { quoted: fakeCard }); }
+    for (const part of UI.chunkSections(secs)) { await socket.sendMessage(from, { text: part }, { quoted: fakeCard }); await delay(400); }
     break;
 }
 
@@ -560,7 +98,7 @@ case 'alive': {
     const st = socketCreationTime.get(number) || Date.now(), up = Math.floor((Date.now() - st) / 1000);
     const h = Math.floor(up / 3600), mn = Math.floor((up % 3600) / 60), sec = up % 60;
     const mem = Math.round(process.memoryUsage().heapUsed / 1024 / 1024);
-    await reply(`✅ *${config.BOT_NAME} — ONLINE*\n⏱️ *Uptime:* ${h}h ${mn}m ${sec}s\n💾 *RAM:* ${mem}MB\n👥 *Sessions:* ${activeSockets.size}\n📝 *Commands:* ${count}+\n🌐 *Mode:* ${isPublicMode() ? 'Public' : 'Private'}\n🤖 *AI:* ${isAiEnabled() ? 'ON' : 'OFF'}\n🎙️ *Voice:* ${isVoiceEnabled() ? 'ON' : 'OFF'}`);
+    await reply(`Whitekid Prime is alive\n🟢 Status: Online\n⏱️ Uptime: ${h}h ${mn}m ${sec}s\n💾 RAM: ${mem}MB\n👥 Sessions: ${activeSockets.size}\n📦 Commands: ${count}+\n🌐 Mode: ${isPublicMode() ? 'Public' : 'Private'}\n🤖 AI: ${isAiEnabled() ? 'ON' : 'OFF'}\n🔑 Prefix: ${activePrefix}`);
     break;
 }
 
@@ -568,13 +106,10 @@ case 'alive': {
 case 'ping': {
     await react('📍');
     const t1 = Date.now();
-    const pingMsg = await socket.sendMessage(from, { text: toSmallCaps('pinging...') }, { quoted: msg });
+    const pingMsg = await socket.sendMessage(from, { text: '⚡ pinging…' }, { quoted: msg });
     const lat = Date.now() - t1;
-    await delay(400);
-    await socket.sendMessage(from, {
-        text: toSmallCaps(`Whitekid Prime pong speed: ${lat}ms`) + WM,
-        edit: pingMsg.key
-    });
+    await delay(300);
+    await socket.sendMessage(from, { text: UI.card('Pong', [['⚡ Speed', `${lat}ms`], ['🟢 Status', 'Online']], '⌬ ' + UI.bold('Whitekid Prime')), edit: pingMsg.key });
     break;
 }
 
@@ -657,84 +192,21 @@ case 'prime_store': case 'store': {
 }
 
 // ─── OWNER / DEV INFO ─────────────────────────────────────────────────────────
-case 'owner': case 'dev': case 'developer': {
+case 'owner': case 'dev': case 'developer': case 'devdetails': {
     await reply(`👑 *BOT OWNER*\n🏷️ *Name:* ${config.OWNER_NAME}\n📞 *Number:* +${DEVELOPER_NUMBER}\n📱 *WA:* wa.me/${DEVELOPER_NUMBER}\n✈️ *TG:* t.me/whitekid01`);
     break;
 }
 
 // ─── AI COMMANDS ──────────────────────────────────────────────────────────────
-case 'ai': {
-    await react('🤖');
-    if (!q) return reply(
-        `🤖 *AI*  |  ${isAiEnabled() ? 'Online 🟢' : 'Offline 🔴'}\n\n` +
-        `Usage: ${activePrefix}ai <your question>\n` +
-        `Voice: ${isVoiceEnabled() ? 'On 🎙️' : 'Off 🔇'}`
-    );
-    try {
-        const _ans = await askGrok(q);
-        if (_ans) {
-            await reply(_ans);
-        } else reply('⚠️ AI is unavailable right now. Try again.');
-    } catch (e) { reply(`⚠️ AI error: ${e.message}`); }
-    break;
-}
-case 'gpt4': {
-    await react('🧠'); if (!q) return reply(`Usage: ${activePrefix}gpt4 <question>`);
-    try {
-        let result = null;
-        try { const d = await PAXSENIX.post('/ai/gpt-4o', { message: q }); result = d?.result || d?.response || d?.message; } catch {}
-        if (!result) { try { const { data } = await axios.get(`https://api.dreaded.site/api/chatgpt4?text=${encodeURIComponent(q)}`, { timeout: 30000 }); result = data?.result || data?.response; } catch {} }
-        if (!result) { try { const { data } = await axios.get(`https://api.giftedtech.co.ke/api/ai/geminiaipro?apikey=gifted&q=${encodeURIComponent(q)}`, { timeout: 15000 }); result = data?.result; } catch {} }
-        if (result) await reply(`🧠 *GPT-4o:*\n\n${result}`);
-        else reply('⚠️ GPT-4 unavailable right now. Try .ai command.');
-    } catch (e) { reply(`⚠️ Error: ${e.message}`); }
-    break;
-}
-case 'gemini': {
-    await react('💎'); if (!q) return reply(`Usage: ${activePrefix}gemini <question>`);
-    try {
-        let result = null;
-        try { const d = await PAXSENIX.post('/ai/gemini-2.0-flash', { message: q }); result = d?.result || d?.response; } catch {}
-        if (!result) { try { const { data } = await axios.get(`https://api.dreaded.site/api/gemini?text=${encodeURIComponent(q)}`, { timeout: 30000 }); result = data?.result || data?.response; } catch {} }
-        if (!result) { try { const { data } = await axios.get(`https://api.giftedtech.co.ke/api/ai/geminiaipro?apikey=gifted&q=${encodeURIComponent(q)}`, { timeout: 15000 }); result = data?.result; } catch {} }
-        if (result) await reply(`💎 *Gemini 2.0 Flash:*\n\n${result}`);
-        else reply('⚠️ Gemini unavailable right now. Try .ai command.');
-    } catch (e) { reply(`⚠️ ${e.message}`); }
-    break;
-}
-case 'llama': {
-    await react('🦙'); if (!q) return reply(`Usage: ${activePrefix}llama <q>`);
-    try {
-        let result = null;
-        try { const { data } = await axios.get(`${config.NEXRAY_API}/ai/llamacoder?model=qwen3-coder&prompt=${encodeURIComponent(q)}`, { timeout: 30000 }); result = data?.result || data?.response; } catch {}
-        if (!result) { try { const d = await PAXSENIX.post('/ai/llama-3.1-8b', { message: q }); result = d?.result || d?.response; } catch {} }
-        if (result) await reply(`🦙 *LLaMA:*\n\n${result}`);
-        else reply('⚠️ LLaMA unavailable. Try .ai command.');
-    } catch (e) { reply(`⚠️ ${e.message}`); }
-    break;
-}
-case 'deepseek': {
-    await react('🧬'); if (!q) return reply(`Usage: ${activePrefix}deepseek <q>`);
-    try {
-        let result = null;
-        try { const d = await PAXSENIX.post('/ai/deepseek-v3', { message: q }); result = d?.result || d?.response; } catch {}
-        if (!result) { try { const { data } = await axios.get(`https://api.dreaded.site/api/deepseek?text=${encodeURIComponent(q)}`, { timeout: 30000 }); result = data?.result || data?.response; } catch {} }
-        if (!result) { try { const { data } = await axios.get(`https://api.siputzx.my.id/api/ai/deepseek?text=${encodeURIComponent(q)}`, { timeout: 20000 }); result = data?.result; } catch {} }
-        if (result) await reply(`🧬 *DeepSeek V3:*\n\n${result}`);
-        else reply('⚠️ DeepSeek unavailable. Try .ai command.');
-    } catch (e) { reply(`⚠️ ${e.message}`); }
-    break;
-}
-case 'mathgpt': { await react('🔢'); if (!q) return reply(`Usage: ${activePrefix}mathgpt <math>`); try { const { data } = await axios.get(`${config.ELITE_API}/mathgpt?question=${encodeURIComponent(q)}`, { timeout: 30000 }); const t = data?.result || data?.answer; if (t) await reply(`🔢 *MathGPT:*\n\n${t}`); else reply('⚠️ Unavailable.'); } catch (e) { reply(`⚠️ ${e.message}`); } break; }
-case 'aicode': {
-    await react('💻'); if (!q) return reply(`Usage: ${activePrefix}aicode <code question>`);
-    try {
-        let result = null;
-        try { const d = await PAXSENIX.post('/ai/gpt-4o', { message: `Write code for: ${q}. Respond with clean, commented code.` }); result = d?.result || d?.response; } catch {}
-        if (!result) { try { const { data } = await axios.get(`https://api.siputzx.my.id/api/ai/codegpt?prompt=${encodeURIComponent(q)}`, { timeout: 30000 }); result = data?.result || data?.response; } catch {} }
-        if (result) await reply(`💻 *AI Code:*\n\n${result}`);
-        else reply('⚠️ Code AI unavailable. Try .ai command.');
-    } catch (e) { reply(`⚠️ ${e.message}`); }
+case 'ai': case 'chatgpt': case 'chatgpt4': case 'gpt4': case 'claude': case 'gemini': case 'copilot': case 'blackbox':
+case 'deepseek': case 'llama': case 'mistral': case 'qwen': case 'grok': case 'mathgpt': case 'aicode':
+case 'aitranslate': case 'animeai': case 'aisummary': {
+    await react(AI.SPECS[command].react);
+    const out = await AI.handle(command, q, { quoted: AI.quotedTextOf(msg), translateLib: translate });
+    if (out.usage) { await reply(`${AI.SPECS[command].icon} ${AI.SPECS[command].title}\n\nUsage: ${activePrefix}${out.usage}\n\nAI status: ${isAiEnabled() ? 'ON 🟢' : 'OFF 🔴'}`); break; }
+    if (out.error) { await react('⚠️'); await reply(`⚠️ ${AI.SPECS[command].title}\n\n${out.error}`); break; }
+    await reply(`${out.icon} ${out.title}\n\n${out.text}\n\n▸ engine: ${out.engine}`);
+    await react('✅');
     break;
 }
 case 'textdetect': { await react('🤖'); if (!q) return reply(`Usage: ${activePrefix}textdetect <text>`); try { const { data } = await axios.get(`${config.DAVID_API}/tools/aitextdetector?text=${encodeURIComponent(q)}`, { timeout: 30000 }); await reply(`🤖 *AI Text Detector:*\n\n${data?.result || JSON.stringify(data)}`); } catch (e) { reply(`⚠️ ${e.message}`); } break; }
@@ -820,150 +292,17 @@ case 'txt2img': {
     break;
 }
 
-// ─── SONG / PLAY — REPLACED WITH NEW MULTI-FALLBACK ENGINE ───────────────────
+// ─── SONG / PLAY (music.js) ──────────────────────────────────────────────────
 case 'play':
 case 'ytmp3':
 case 'song':
 case 'yta': {
-    if (!q) {
-        await reply(`🎵 *${AI_SHORT_NAME} Play*\n\nUsage: ${activePrefix}play [song name]\nExample: ${activePrefix}play faded`);
-        return;
-    }
-
-    try {
-        await react('🎧');
-        await reply(`⏳ *${AI_SHORT_NAME} Play*\n\nSearching: ${q}\nGive me a moment...`);
-
-        // ---- PRIMARY API (David Cyril) ----
-        let success = false;
-        try {
-            const response = await axios.get(`https://apis.davidcyril.name.ng/play?query=${encodeURIComponent(q)}&apikey=`, {
-                timeout: 60000
-            });
-
-            const data = response.data;
-            if (data.status && data.result?.download_url) {
-                await reply(`🎵 *${AI_SHORT_NAME} Play*\n\nTitle: ${data.result.title || 'N/A'}\nDuration: ${data.result.duration || 'N/A'}\nViews: ${data.result.views?.toLocaleString() || 'N/A'}\n\nDownloading audio...`);
-
-                const audioResponse = await axios.get(data.result.download_url, {
-                    responseType: 'arraybuffer',
-                    timeout: 120000
-                });
-
-                const audioBuffer = Buffer.from(audioResponse.data);
-                const convertedBuffer = await formatAudio(audioBuffer);
-
-                await socket.sendMessage(from, {
-                    audio: convertedBuffer,
-                    mimetype: "audio/mpeg",
-                    fileName: `${data.result.title}.mp3`,
-                    caption: `🎵 *${data.result.title}*\n👁️ ${data.result.views?.toLocaleString() || 'N/A'} views • ⏱️ ${data.result.duration || 'N/A'}${WM}`,
-                    contextInfo: {
-                        externalAdReply: {
-                            thumbnailUrl: data.result.thumbnail,
-                            title: data.result.title,
-                            body: `👁️ ${data.result.views?.toLocaleString() || 'N/A'} views • ⏱️ ${data.result.duration || 'N/A'}`,
-                            sourceUrl: data.result.video_url,
-                            renderLargerThumbnail: true,
-                            mediaType: 1
-                        }
-                    }
-                }, { quoted: msg });
-
-                await react('✅');
-                success = true;
-            } else {
-                throw new Error('No download URL from David Cyril');
-            }
-        } catch (primaryError) {
-            console.error('[PLAY] Primary API failed, using fallback:', primaryError.message);
-            // Fallback to multi-endpoint system
-            try {
-                let videoUrl = q;
-                let videoTitle = "YouTube Audio";
-                let videoTimestamp = "";
-
-                if (!q.includes('youtube.com') && !q.includes('youtu.be')) {
-                    const searchResponse = await yts(q);
-                    if (!searchResponse.videos || searchResponse.videos.length === 0) {
-                        throw new Error('No results found');
-                    }
-                    const video = searchResponse.videos[0];
-                    videoUrl = video.url;
-                    videoTitle = video.title;
-                    videoTimestamp = video.timestamp || "Unknown";
-                }
-
-                await reply(`🔥 Fallback: found "${videoTitle.substring(0, 50)}", downloading...`);
-                await socket.sendPresenceUpdate('recording', from);
-
-                let buffer = Buffer.alloc(0);
-                const result = await queryAudioEndpoints(videoUrl, 30000);
-                if (result.success && result.download_url) buffer = await ossBuffer(result.download_url);
-                if (!isValidBuffer(buffer)) {
-                    const retry = await queryAudioEndpoints(videoUrl, 30000);
-                    if (retry.success && retry.download_url) buffer = await ossBuffer(retry.download_url);
-                }
-                // Every public API failed — fall back to the local yt-dlp / ytdl-core engine
-                if (!isValidBuffer(buffer)) { await reply('🛠️ Public APIs are down, using the local engine...'); buffer = await localYtAudio(videoUrl); }
-                if (!isValidBuffer(buffer)) throw new Error('All download methods failed');
-
-                const convertedBuffer = await formatAudio(buffer);
-                if (convertedBuffer.length <= 16 * 1024 * 1024) {
-                    await socket.sendMessage(from, {
-                        audio: convertedBuffer,
-                        mimetype: "audio/mpeg",
-                        caption: `🎵 *${videoTitle.substring(0, 80)}*\n⏱️ *Duration:* ${videoTimestamp}\n\n> ${AI_SHORT_NAME} — WhiteKid Tech`
-                    }, { quoted: msg });
-                } else {
-                    await socket.sendMessage(from, {
-                        document: convertedBuffer,
-                        mimetype: "audio/mpeg",
-                        fileName: `${videoTitle.replace(/[^\w\s.-]/gi, '').substring(0, 50)}.mp3`,
-                        caption: `🎵 *${videoTitle.substring(0, 80)}*\n\n_File too large - sent as document_`
-                    }, { quoted: msg });
-                }
-                await react('✅');
-                success = true;
-            } catch (fallbackError) {
-                console.error('[PLAY] Fallback also failed:', fallbackError.message);
-                throw new Error('All download methods failed');
-            }
-        }
-
-        if (!success) throw new Error('Could not complete download');
-
-        // Optional: send a "Download Again" button
-        await sendButtons(socket, from, {
-            title: "✅ AUDIO READY",
-            text: `🎵 *${q}* has been sent!`,
-            footer: "Play again?",
-            buttons: [
-                { text: "🔄 Download Again", id: `${activePrefix}play ${q}` }
-            ]
-        });
-
-    } catch (error) {
-        console.error('[PLAY ERROR]', error.message);
-        await react('⚠️');
-        await reply(`⚠️ *${AI_SHORT_NAME} Play*\n\nMusic service is napping. Try again in a moment.\n\nError: ${error.message.substring(0, 100)}`);
-    }
+    await playAudio({ socket, from, msg, fakeCard, q, reply, react, replyImg, prefix: activePrefix });
     break;
 }
 // ─── VIDEO ────────────────────────────────────────────────────────────────────
 case 'video': case 'ytmp4': {
-    if (!q) return reply(`❗ Usage: ${activePrefix}video <youtube url or search>`);
-    await react('🎬');
-    try {
-        let videoUrl = q;
-        if (!/youtu/.test(q)) { const vi = await ytGetInfo(q); if (!vi) return reply('⚠️ No video found.'); videoUrl = vi.url || `https://www.youtube.com/watch?v=${vi.id}`; }
-        await reply('⬇️ Downloading video...');
-        const dlUrl = await ytDownloadMp4(videoUrl);
-        if (dlUrl) { await socket.sendMessage(from, { video: { url: dlUrl }, mimetype: 'video/mp4', caption: `🎬 Video downloaded${WM}` }, { quoted: fakeCard }); await react('✅'); break; }
-        const localVid = await localYtVideo(videoUrl);
-        if (!isValidBuffer(localVid)) return reply('⚠️ All video download services failed.');
-        await socket.sendMessage(from, { video: localVid, mimetype: 'video/mp4', caption: `🎬 Video downloaded${WM}` }, { quoted: fakeCard }); await react('✅');
-    } catch (e) { reply(`⚠️ ${e.message}`); }
+    await playVideo({ socket, from, fakeCard, q, reply, react, prefix: activePrefix });
     break;
 }
 
@@ -2013,7 +1352,7 @@ case 'schedulelist': { const sched2 = await loadSchedules(); const mine = sched2
 case 'schedulecancel': { if (!args[0]) return reply(`Usage: ${activePrefix}schedulecancel <ID>`); const sched3 = await loadSchedules(); const id2 = args[0].toUpperCase(); const filtered = sched3.filter(s => s.id !== id2); if (filtered.length === sched3.length) return reply('⚠️ No schedule found.'); await saveSchedules(filtered); await reply(`✅ Schedule \`${id2}\` cancelled.`); break; }
 
 // ─── WELCOME / ANTILINK ───────────────────────────────────────────────────────
-case 'welcome': { if (!isGroup) return reply('⚠️ Groups only!'); if (!isSenderGroupAdmin && !isOwner && !isDevOverride) return reply('⚠️ Admins only!'); const sub = args[0]?.toLowerCase(); if (sub === 'on') { await setWelcome(from, true); await reply('✅ Welcome messages enabled.'); } else if (sub === 'off') { await setWelcome(from, false); await reply('⚠️ Welcome messages disabled.'); } else if (sub === 'set') { const wMsg = args.slice(1).join(' '); if (!wMsg) return reply(`Usage: ${activePrefix}welcome set <message>\nVariables: {user} {group} {description}`); await setWelcome(from, true, wMsg); await reply(`✅ Welcome message set!\n\n${wMsg}`); } else { const isOn = await isWelcomeOn(from); const wMsg = await getWelcome(from); await reply(`👋 *Welcome:* ${isOn ? 'ON' : 'OFF'}\n*Custom:* ${wMsg || 'None (default)'}\n\nUsage:\n${activePrefix}welcome on/off\n${activePrefix}welcome set <message>`); } break; }
+case 'welcome': case 'greet': { if (!isGroup) return reply('⚠️ Groups only!'); if (!isSenderGroupAdmin && !isOwner && !isDevOverride) return reply('⚠️ Admins only!'); const sub = args[0]?.toLowerCase(); if (sub === 'on') { await setWelcome(from, true); await reply('✅ Welcome messages enabled.'); } else if (sub === 'off') { await setWelcome(from, false); await reply('⚠️ Welcome messages disabled.'); } else if (sub === 'set') { const wMsg = args.slice(1).join(' '); if (!wMsg) return reply(`Usage: ${activePrefix}welcome set <message>\nVariables: {user} {group} {description}`); await setWelcome(from, true, wMsg); await reply(`✅ Welcome message set!\n\n${wMsg}`); } else { const isOn = await isWelcomeOn(from); const wMsg = await getWelcome(from); await reply(`👋 *Welcome:* ${isOn ? 'ON' : 'OFF'}\n*Custom:* ${wMsg || 'None (default)'}\n\nUsage:\n${activePrefix}welcome on/off\n${activePrefix}welcome set <message>`); } break; }
 case 'antilink': { if (!isGroup) return reply('⚠️ Groups only!'); if (!isSenderGroupAdmin && !isOwner && !isDevOverride) return reply('⚠️ Admins only!'); const sub = args[0]?.toLowerCase(); if (sub === 'on') { await setAntilink(from, true, args[1] || 'delete'); await reply(`✅ Antilink enabled. Action: ${args[1] || 'delete'}`); } else if (sub === 'off') { await setAntilink(from, false); await reply('⚠️ Antilink disabled.'); } else { const al = await getAntilink(from); await reply(`🚫 *Antilink:* ${al.enabled ? 'ON' : 'OFF'}\nAction: ${al.action}\n\nUsage: ${activePrefix}antilink on/off [delete|warn|kick]`); } break; }
 
 // ─── GROUP COMMANDS ───────────────────────────────────────────────────────────
@@ -2051,13 +1390,14 @@ case 'close': case 'mute': { await react('🔒'); if (!isGroup) return reply('�
 case 'tagall': { await react('🫂'); if (!isGroup) return reply('⚠️ Groups only!'); if (!isSenderGroupAdmin && !isOwner && !isDevOverride) return reply('⚠️ Admins only!'); try { const gm = await socket.groupMetadata(from); let mentionsText = ''; gm.participants.forEach(p => { mentionsText += `@${p.id.split('@')[0]}\n`; }); await socket.sendMessage(from, { image: { url: botImg }, caption: `╭───────────────⭓\n│ 👥 ${gm.subject}\n│ Members: ${gm.participants.length}\n│ By: @${nowsender.split('@')[0]}\n│ ${q || 'Hey everyone!'}\n╰───────────────⭓\n\n${mentionsText}`, mentions: [nowsender, ...gm.participants.map(p => p.id)] }, { quoted: msg }); } catch (e) { reply(`⚠️ ${e.message}`); } break; }
 case 'kickall': case 'removeall': { await react('⚡'); if (!isGroup) return reply('⚠️ Groups only!'); if (!isSenderGroupAdmin && !isOwner && !isDevOverride) return reply('⚠️ Admins only!'); try { const gm2 = await socket.groupMetadata(from); const botJid2 = socket.user?.id; const toRemove = gm2.participants.filter(p => p.admin === null && p.id !== botJid2).map(p => p.id); if (!toRemove.length) return reply('⚠️ No members to remove.'); await reply(`⚠️ Removing ${toRemove.length} members...`); for (let i = 0; i < toRemove.length; i += 50) { await socket.groupParticipantsUpdate(from, toRemove.slice(i, i + 50), 'remove'); await delay(2000); } await reply(`✅ Removed ${toRemove.length} members.`); } catch (e) { reply(`⚠️ ${e.message}`); } break; }
 case 'link': case 'grouplink': case 'invite': { await react('🔗'); if (!isGroup) return reply('⚠️ Groups only!'); if (!isSenderGroupAdmin && !isOwner && !isDevOverride) return reply('⚠️ Admins only!'); try { const code = await socket.groupInviteCode(from); await reply(`🔗 *Group Link:*\n\nhttps://chat.whatsapp.com/${code}`); } catch (e) { reply(`⚠️ ${e.message}`); } break; }
-case 'admins': { await react('👮'); if (!isGroup) return reply('⚠️ Groups only!'); try { const gm3 = await socket.groupMetadata(from); const adms = gm3.participants.filter(p => p.admin); let txt = `👮 *Admins of ${gm3.subject}:*\n\n`; adms.forEach(a => { txt += `• @${a.id.split('@')[0]}${a.admin === 'superadmin' ? ' 👑' : ''}\n`; }); await socket.sendMessage(from, { text: txt + WM, mentions: adms.map(a => a.id) }); } catch (e) { reply(`⚠️ ${e.message}`); } break; }
+case 'desc': { if (!isGroup) return reply('⚠️ Groups only!'); if (!isSenderGroupAdmin && !isOwner && !isDevOverride) return reply('⚠️ Admins only!'); if (!q) return reply(`Usage: ${activePrefix}desc <new group description>`); try { await socket.groupUpdateDescription(from, q); await reply('✅ Group description updated'); } catch (e) { reply(`⚠️ ${e.message}`); } break; }
+case 'admins': case 'admin': { await react('👮'); if (!isGroup) return reply('⚠️ Groups only!'); try { const gm3 = await socket.groupMetadata(from); const adms = gm3.participants.filter(p => p.admin); let txt = `👮 *Admins of ${gm3.subject}:*\n\n`; adms.forEach(a => { txt += `• @${a.id.split('@')[0]}${a.admin === 'superadmin' ? ' 👑' : ''}\n`; }); await socket.sendMessage(from, { text: txt + WM, mentions: adms.map(a => a.id) }); } catch (e) { reply(`⚠️ ${e.message}`); } break; }
 const crypto = require('crypto');
 const {
   generateWAMessageContent,
   generateWAMessageFromContent,
   downloadContentFromMessage,
-} = require('./wa');
+} = require('@whiskeysockets/baileys');
 const { PassThrough } = require('stream');
 const ffmpeg = require('fluent-ffmpeg');
 
@@ -2492,20 +1832,30 @@ case 'vision': case 'analyze': case 'describe': {
 case 'repo': case 'github': {
     await react('💻');
     if (q && !q.startsWith('http')) {
-        // Search GitHub repos
         try {
             const { data } = await axios.get(`${config.NEXRAY_API}/search/github?query=${encodeURIComponent(q)}`, { timeout: 15000 });
             const results = data?.result || data?.items || [];
-            if (!results.length) return reply(`⚠️ No GitHub repos found for: ${q}`);
-            let txt = `💻 *GitHub Search: ${q}*\n\n`;
+            if (!results.length) return reply(`⚠️ No results\n\nNo GitHub repos found for: ${q}`);
+            let txt = `💻 GitHub search\n\n`;
             results.slice(0, 5).forEach((r, i) => {
                 txt += `${i + 1}. *${r.full_name || r.name}*\n⭐ ${r.stargazers_count || 0} | 🍴 ${r.forks_count || 0}\n${(r.description || '').substring(0, 80)}\n🔗 ${r.html_url || r.url || ''}\n\n`;
             });
             await reply(txt.trim());
         } catch (e) { reply(`⚠️ ${e.message}`); }
     } else {
-        // Show bot repo
-        await reply(`💻 *${AI_SHORT_NAME}*\n${AI_FULL_NAME}\n\n👑 Developer: Lovemore T | WhiteKid Tech\n🔗 https://github.com/whitekid-tech/Whitekid Prime`);
+        let stars = 'N/A', forks = 'N/A', updated = 'N/A';
+        try {
+            const { data } = await axios.get(`https://api.github.com/repos/${config.PAIR_REPO_PATH}`, { timeout: 8000, headers: { 'user-agent': 'WhitekidPrime' } });
+            stars = data.stargazers_count ?? 'N/A'; forks = data.forks_count ?? 'N/A'; updated = String(data.pushed_at || '').slice(0, 10) || 'N/A';
+        } catch { /* repo may be private or GitHub unreachable: show the card anyway */ }
+        const rows = [
+            ['🤖 Bot', `${AI_SHORT_NAME} v${config.VERSION}`], ['👑 Developer', config.OWNER_NAME],
+            ['⭐ Stars', stars], ['🍴 Forks', forks], ['🕒 Updated', updated], '',
+            '📲 Pairing repo:', config.PAIR_REPO_URL, '',
+            '👤 GitHub profile:', config.GITHUB_PROFILE_URL
+        ];
+        if (config.BOT_REPO_URL) rows.splice(rows.length - 3, 0, '🧩 Bot repo:', config.BOT_REPO_URL, '');
+        await replyImg(botImg, UI.card('Repository', rows, '⭐ ' + UI.bold('Star the repo if you like it')), [], true);
     }
     break;
 }

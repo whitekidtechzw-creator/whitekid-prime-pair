@@ -173,6 +173,22 @@ async function queryAudioEndpoints(videoUrl, timeout = 30000) {
     return { success: false, download_url: null };
 }
 
+function extractAudioUrl(data) {
+    const d = data || {}, r = d.result, x = d.data;
+    const c = [d.mp3, d.audio, d.download_url, d.url, d.dl, r && r.download_url, r && r.audio, r && r.mp3, r && r.url, typeof r === 'string' ? r : null, x && x.download_url, x && x.url, x && x.mp3];
+    return c.find(v => typeof v === 'string' && /^https?:\/\//.test(v)) || null;
+}
+
+// Ask the audio APIs in small parallel batches (a dead API no longer costs 30s each) and collect working links.
+async function audioCandidates(videoUrl, { timeout = 12000, batch = 4, want = 3 } = {}) {
+    const urls = [];
+    for (let i = 0; i < audioEndpoints.length && urls.length < want; i += batch) {
+        const res = await Promise.all(audioEndpoints.slice(i, i + batch).map(async fn => { try { const { data } = await axios.get(fn(videoUrl), { timeout }); return extractAudioUrl(data); } catch { return null; } }));
+        for (const u of res) if (u && !urls.includes(u)) urls.push(u);
+    }
+    return urls;
+}
+
 function isValidBuffer(buf) {
     return Buffer.isBuffer(buf) && buf.length > 16 * 1024;
 }
@@ -212,27 +228,9 @@ async function formatAudio(buffer) {
     });
 }
 
-const IDENTITY_TRIGGERS = ['who created you','who made you','who are you','your creator','who built you','what is your name','what are you','introduce yourself','tell me about yourself','what does Prime stand for','full name'];
-
 async function askGrok(userMessage) {
-    if (IDENTITY_TRIGGERS.some(t => userMessage.toLowerCase().includes(t)))
-        return `🤖 I am *${AI_SHORT_NAME}* — *${AI_FULL_NAME}*.\n\nCreated by *WhiteKid Tech*, in 2026.\n📞 wa.me/${DEVELOPER_NUMBER}\n📱 t.me/whitekid01`;
-    const tryApis = [
-        // Primary: Paxsenix GPT-4o (has API key, most reliable)
-        async () => { const d = await PAXSENIX.post('/ai/gpt-4o', { message: `[SYSTEM: ${AI_SYSTEM_IDENTITY}] ${userMessage}` }); return d?.result || d?.response || d?.message || d?.text || null; },
-        // Paxsenix Gemini Flash
-        async () => { const d = await PAXSENIX.post('/ai/gemini-2.0-flash', { message: userMessage }); return d?.result || d?.response || null; },
-        // Paxsenix Claude Haiku
-        async () => { const d = await PAXSENIX.post('/ai/claude-3-5-haiku', { message: userMessage }); return d?.result || d?.response || null; },
-        // Hostify Grok fallback
-        async () => { const d = await hostifyPost(HOSTIFY.EP.GROK, { message: `[SYSTEM: ${AI_SYSTEM_IDENTITY}] ${userMessage}` }); return d?.result || d?.response || d?.message || null; },
-        // Free API fallbacks
-        async () => { const { data } = await axios.get(`https://api.dreaded.site/api/gemini?text=${encodeURIComponent(userMessage)}`, { timeout: 20000 }); return data?.result || data?.response || null; },
-        async () => { const { data } = await axios.get(`https://api.siputzx.my.id/api/ai/deepseek?text=${encodeURIComponent(userMessage)}`, { timeout: 20000 }); return data?.result || null; },
-        async () => { const { data } = await axios.get(`https://api.giftedtech.co.ke/api/ai/geminiaipro?apikey=gifted&q=${encodeURIComponent(userMessage)}`, { timeout: 15000 }); return data?.result || null; }
-    ];
-    for (const fn of tryApis) { try { const r = await fn(); if (r) return r; } catch {} }
-    return null;
+    const r = await require('./ai').ask(userMessage, { cmd: 'ai' });
+    return r ? r.text : null;
 }
 
 async function espnScoreboard(sport, league) {
@@ -667,4 +665,4 @@ function collectApiTargets() {
     return out;
 }
 
-module.exports = { LEAGUE_IDS, PAXSENIX, TelegraPh, UploadFileUgu, aioDownload, askGrok, collectApiTargets, downloadMovieFile, espnScoreboard, formatAudio, fromBuffer, generateImage, getCurrentDateTime, getLyrics, getUserLocation, isValidBuffer, localYtAudio, localYtVideo, mediafireDl, ossBuffer, paxMemes, paxQuotes, paxShazam, paxTempMailBody, paxTempMailCreate, paxTempMailInbox, paxVideoJob, queryAudioEndpoints, searchMovies, sendVoiceReply, showSubtitleOptions, sportsdbSearch, transcribeAudio, uploadAudioToCatbox, uploadSmartMedia, uploadToCatbox, uploadToTelegraph, viewonceCommand, webp2mp4File, ytDownloadMp4, ytGetInfo };
+module.exports = { audioCandidates, extractAudioUrl, LEAGUE_IDS, PAXSENIX, TelegraPh, UploadFileUgu, aioDownload, askGrok, collectApiTargets, downloadMovieFile, espnScoreboard, formatAudio, fromBuffer, generateImage, getCurrentDateTime, getLyrics, getUserLocation, isValidBuffer, localYtAudio, localYtVideo, mediafireDl, ossBuffer, paxMemes, paxQuotes, paxShazam, paxTempMailBody, paxTempMailCreate, paxTempMailInbox, paxVideoJob, queryAudioEndpoints, searchMovies, sendVoiceReply, showSubtitleOptions, sportsdbSearch, transcribeAudio, uploadAudioToCatbox, uploadSmartMedia, uploadToCatbox, uploadToTelegraph, viewonceCommand, webp2mp4File, ytDownloadMp4, ytGetInfo };

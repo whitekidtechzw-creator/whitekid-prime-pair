@@ -29,7 +29,7 @@ const DEVELOPER_NUMBER = process.env.DEVELOPER_NUMBER || '263789846423';
 const AI_SYSTEM_IDENTITY = `You are ${AI_SHORT_NAME}, whose full name is ${AI_FULL_NAME}. Created by WhiteKid Tech in 2026. Never claim to be any other AI.`;
 
 const config = {
-    PREFIX: process.env.PREFIX || '.', BOT_NAME: AI_SHORT_NAME, BOT_FULL_NAME: AI_FULL_NAME, VERSION: '7.3.0',
+    PREFIX: process.env.PREFIX || '.', BOT_NAME: AI_SHORT_NAME, BOT_FULL_NAME: AI_FULL_NAME, VERSION: '7.2.0',
     OWNER_NUMBERS: [DEVELOPER_NUMBER, ...envList(process.env.OWNER_NUMBERS)],
     OWNER_NAME: 'WhiteKid Tech',
     OWNER_TG: 'https://t.me/whitekid01', OWNER_WA: `https://wa.me/${DEVELOPER_NUMBER}`,
@@ -63,6 +63,8 @@ const config = {
     SILENT_API: 'https://darkvibe314-silent-movies-api.hf.space',
     OKATSU_API: 'https://okatsu-rolezapiiz.vercel.app',
     NAYAN_API: 'https://nayan-video-downloader.vercel.app',
+    PAIR_REPO_URL: 'https://github.com/whitekidtechzw-creator/whitekid-prime-pair', PAIR_REPO_PATH: 'whitekidtechzw-creator/whitekid-prime-pair',
+    GITHUB_PROFILE_URL: 'https://github.com/whitekidtechzw-creator', BOT_REPO_URL: process.env.BOT_REPO_URL || '',
     BOT_FOOTER: '✰Whitekid Prime',
     AUTO_RECORDING: 'true'
 };

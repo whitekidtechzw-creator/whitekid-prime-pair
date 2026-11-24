@@ -1,4 +1,4 @@
-# Whitekid Prime v7.1
+# Whitekid Prime v7.2
 
 A multi-device WhatsApp bot (350+ commands) with a web page where people pair their number, plus an optional Telegram pairing bot. This is the v7 bot restructured into the same flat layout as `astra-md-mini-v2-flat`.
 
@@ -24,6 +24,9 @@ Node 18+. `ffmpeg` is needed for audio/video commands.
 | `wk7*.js` | the v7 toolkit pack (246 offline/online commands) + `wk7.test.js` |
 | `services.js` | API hub, downloaders, AI, uploads, lyrics, movies |
 | `events.js` | antidelete, group welcome/goodbye/antilink, scheduler, tic-tac-toe |
+| `ui.js`, `menudata.js` | bot font, reply card, menu layout (`.menu`, `.menu <category>`) |
+| `ai.js` | AI engine: every AI command, answer cleaning, provider fallback |
+| `music.js` | `.play` / `.song` / `.video` engine |
 | `helpers.js` | text styling, buttons/carousels, group/newsletter join |
 | `store.js` | settings on disk, bans, shared state, session folders |
 | `config.js` | all settings, read from `.env` |
@@ -44,12 +47,11 @@ Node 18+. `ffmpeg` is needed for audio/video commands.
 
 Automating a personal WhatsApp account can get it banned. Use a spare number.
 
----
-
-## v7.2: Whitekid socket + always awake
-
-- **Socket:** the bot now loads `whitekid-sockets` (from GitHub, see `package.json`) and falls back to Baileys if it can't. The log line `🔌 WhatsApp library:` tells you which one is in use. Force one with `WA_LIB`.
-- **Stays awake:** the bot pings its own public address every 4 minutes, and every minute for 20 minutes after anyone starts pairing. Set `KEEP_ALIVE_URL` to your site address if your host doesn't set `RENDER_EXTERNAL_URL`.
-- **Never gives up:** reconnecting no longer stops after a few tries, and a watchdog brings back any paired number that dropped or got stuck (checked every 2 minutes).
-- A sleeping service can't wake itself, so also add a free outside pinger (UptimeRobot or cron-job.org) hitting `https://YOUR-SITE/ping` every 5 minutes.
-- On a free host without a persistent disk, sessions are wiped on every restart or redeploy. Use a persistent disk and point `DATA_DIR` at it.
+## v7.2 changes
+- **Menu**: new card style, built from `menudata.js` (edit that file to add or move commands). `.menu` sends the stats card + all categories; `.menu ai` shows one category. A test fails if a menu entry has no handler.
+- **Font**: labels, titles and `*headings*` in every bot message use the bold font. `BOT_FONT=none` turns it off. Links, code blocks and `.commands` are never touched.
+- **AI**: `.ai .chatgpt .chatgpt4 .gpt4 .claude .gemini .copilot .blackbox .deepseek .llama .mistral .qwen .grok .mathgpt .aicode .aitranslate .animeai .aisummary`. For the most reliable answers set `AI_API_KEY` (any OpenAI-compatible service, see `.env.example`); without it free public endpoints are used. Each answer shows which engine produced it.
+- **Play**: searches YouTube first, shows a track card, tries download sources in parallel, checks the file is really audio, sends mp3/m4a/ogg (or a document if it is too big), local yt-dlp/ytdl-core as last resort.
+- **`.repo`** shows the pairing repo https://github.com/whitekidtechzw-creator/whitekid-prime-pair (set `BOT_REPO_URL` to add the bot repo too).
+- **Welcome message** sent to the owner's inbox after pairing was redesigned.
+- Menu entries without handlers are fixed (`devdetails`, `desc`, `admin`, `greet`); `spam` was removed from the menu.

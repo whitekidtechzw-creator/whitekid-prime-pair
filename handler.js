@@ -1,5 +1,6 @@
 'use strict';
-const { getRandomBotImage, getTS, sendButtons, sendCarousel, styleWA, toSmallCaps, totalcmds } = require('./helpers');
+const { getRandomBotImage, getTS, sendButtons, sendCarousel, styleWA, totalcmds } = require('./helpers');
+const { restyle } = require('./ui');
 const { downloadContentFromMessage, getContentType } = require('./wa');
 const { getCustomPrefix, isAiEnabled, isAutoAddOn, isAutoRead, isAutoRecord, isBanned, isDeveloper, isPairedOwner, isPublicMode, loadAD, loadSS, messageStore, presenceTracker } = require('./store');
 const { AI_SHORT_NAME, WM, config } = require('./config');
@@ -15,8 +16,8 @@ function wrapSend(socket) {
         socket.sendMessage = async (jid, content, opts) => {
             if (content && typeof content === 'object') {
                 const c = { ...content };
-                if (typeof c.text === 'string') c.text = toSmallCaps(c.text);
-                if (typeof c.caption === 'string') c.caption = toSmallCaps(c.caption);
+                if (typeof c.text === 'string') c.text = restyle(c.text);
+                if (typeof c.caption === 'string') c.caption = restyle(c.caption);
                 return _origSend(jid, c, opts);
             }
             return _origSend(jid, content, opts);
@@ -46,11 +47,11 @@ async function handleMessage(socket, number, msg, deps) {
                 const _lines = (text || '').split('\n');
                 const _cleaned = _lines
                     .filter(l => !l.includes('━━━━━━━━━━━━━'))
-                    .map(l => l.replace(/^\*┃\*\s?/, '').replace(/\*([^*\n]+)\*/g, '$1').replace(/_([^_\n]+)_/g, '$1').replace(/^> /, ''))
+                    .map(l => l.replace(/^\*┃\*\s?/, '').replace(/^> /, ''))
                     .join('\n').replace(/\n{3,}/g, '\n\n').trim();
                 await socket.sendMessage(msg.key.remoteJid, { text: styleWA(_cleaned) + WM, contextInfo: makeCtx(mentions) }, { quoted: fakeCard });
             } catch (e) { console.error('[REPLY]', e.message); } };
-                const replyImg = async (imgUrl, caption, mentions = [], rawMenu = false) => { try { let _cap = (caption || '').replace(/\*([^*\n]+)\*/g, '$1').replace(/_([^_\n]+)_/g, '$1').replace(/^> /gm, ''); if (!rawMenu) _cap = styleWA(_cap); await socket.sendMessage(msg.key.remoteJid, { image: { url: imgUrl }, caption: _cap + WM, contextInfo: makeCtx(mentions) }, { quoted: fakeCard }); } catch (e) { console.error('[REPLYIMG]', e.message); await reply(caption, mentions); } };
+                const replyImg = async (imgUrl, caption, mentions = [], rawMenu = false) => { try { let _cap = (caption || '').replace(/^> /gm, ''); _cap = rawMenu ? restyle(_cap) : styleWA(_cap); await socket.sendMessage(msg.key.remoteJid, { image: { url: imgUrl }, caption: _cap + WM, contextInfo: makeCtx(mentions) }, { quoted: fakeCard }); } catch (e) { console.error('[REPLYIMG]', e.message); await reply(caption, mentions); } };
                 const react = async emoji => { try { await socket.sendMessage(msg.key.remoteJid, { react: { text: emoji, key: msg.key } }); } catch {} };
                 const replyWithVoice = async (text, imgUrl = null) => { if (imgUrl) await replyImg(imgUrl, text); else await reply(text); }; // voice removed
     

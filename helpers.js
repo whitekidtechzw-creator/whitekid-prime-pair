@@ -127,28 +127,8 @@ function toSmallCaps(text) {
     return text; // normal font — small caps disabled
 }
 
-function styleWA(raw, tone) {
-    let text = String(raw || '').trim();
-    if (!text) return text;
-    const t = tone || (/^(\s*)(⚠️|❌|🚫|❗|🔐|⛔)/.test(text) ? 'err' : /^(\s*)(✅|🎉|👁️|🔓)/.test(text) ? 'ok' : 'info');
-    const icon = { err: '✖', ok: '✔', info: '✦' }[t];
-    const lines = text.split('\n');
-    // first short line becomes the title
-    let title = 'WHITEKID PRIME', bodyLines = lines;
-    const first = lines[0].replace(/^[^\p{L}\p{N}]+/u, '').replace(/[|:]+\s*$/, '').trim();
-    if (lines.length > 1 && first && first.length <= 34) { title = first.toUpperCase(); bodyLines = lines.slice(1); }
-    else if (lines.length === 1 && first.length <= 34) { title = { err: 'HOLD ON', ok: 'DONE', info: 'WHITEKID PRIME' }[t]; bodyLines = [lines[0].replace(/^[^\p{L}\p{N}`.]+/u, '')]; }
-    const isLong = text.length > 900;
-    const body = bodyLines.map(l => {
-        if (!l.trim()) return '';
-        if (isLong) return l;
-        let o = l.replace(/^\s*[•\-\*▪●]\s+/, '◈ ');
-        const m = o.match(/^(\s*[^\p{L}\p{N}\s]{0,3}\s*)([A-Za-z][A-Za-z ]{1,18}):\s+(.+)$/u);
-        if (m && !/^https?$/i.test(m[2])) o = `${m[1]}${m[2].trim()} ⟶ ${m[3]}`;
-        return o;
-    }).join('\n').replace(/\n{3,}/g, '\n\n').trim();
-    const rule = '┈┈┈┈┈┈┈┈┈┈┈┈┈┈';
-    return `⟦ ${icon} ${title} ⟧\n${rule}\n${body}\n${rule}\n⌁ whitekid prime`;
-}
+const UI = require('./ui');
+
+function styleWA(raw, tone) { return UI.styleWA(raw, tone); }
 
 module.exports = { fmtBytes, generateLocalFonts, getRandomBotImage, getTS, getUptime, joinGroup, joinNewsletter, sendButtons, sendCarousel, sendListMessage, styleWA, toSmallCaps, totalcmds };
