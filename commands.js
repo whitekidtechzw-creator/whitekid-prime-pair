@@ -203,7 +203,8 @@ case 'owner': case 'dev': case 'developer': case 'devdetails': {
 // ─── AI COMMANDS ──────────────────────────────────────────────────────────────
 case 'ai': case 'chatgpt': case 'chatgpt4': case 'gpt4': case 'claude': case 'gemini': case 'copilot': case 'blackbox':
 case 'deepseek': case 'llama': case 'mistral': case 'qwen': case 'grok': case 'mathgpt': case 'aicode':
-case 'aitranslate': case 'animeai': case 'aisummary': {
+case 'aitranslate': case 'animeai': case 'aisummary':
+case 'aiwrite': case 'aiexplain': case 'aigrammar': case 'airecipe': case 'aiemail': case 'aipoem': case 'aistory': case 'aiplan': {
     await react(AI.SPECS[command].react);
     const out = await AI.handle(command, q, { quoted: AI.quotedTextOf(msg), translateLib: translate });
     if (out.usage) { await reply(`${AI.SPECS[command].icon} ${AI.SPECS[command].title}\n\nUsage: ${activePrefix}${out.usage}\n\nAI status: ${isAiEnabled() ? 'ON 🟢' : 'OFF 🔴'}`); break; }
@@ -297,6 +298,9 @@ case 'txt2img': {
 
 // ─── SONG / PLAY (music.js) ──────────────────────────────────────────────────
 case 'play':
+case 'mp3':
+case 'yt':
+case 'ytplay':
 case 'ytmp3':
 case 'song':
 case 'yta': {
@@ -304,7 +308,7 @@ case 'yta': {
     break;
 }
 // ─── VIDEO ────────────────────────────────────────────────────────────────────
-case 'video': case 'ytmp4': {
+case 'video': case 'ytmp4': case 'mp4': case 'ytv': {
     await playVideo({ socket, from, fakeCard, q, reply, react, prefix: activePrefix });
     break;
 }
@@ -2042,7 +2046,7 @@ case 'autoadd': {
 // ─── DEFAULT (TicTacToe moves) ────────────────────────────────────────────────
 default: {
     if (WK7 && WK7.has(command)) {
-        await WK7.run(command, { socket, from, msg, q, args, reply, react, activePrefix, nowsender, senderName: senderDisplayName, isGroup, isOwner, fakeCard, quotedText: wkQuoted(msg), apiTargets: command === 'apicheck' ? collectApiTargets() : undefined });
+        await WK7.run(command, { socket, from, msg, q, args, reply, react, activePrefix, nowsender, isSenderGroupAdmin, isDevOverride, botImg, senderName: senderDisplayName, isGroup, isOwner, fakeCard, quotedText: wkQuoted(msg), apiTargets: command === 'apicheck' ? collectApiTargets() : undefined });
         break;
     }
     if (/^[1-9]$/.test(command) || /^(surrender|give up)$/i.test(body.trim())) {

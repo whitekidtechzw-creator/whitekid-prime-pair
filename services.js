@@ -157,7 +157,8 @@ const audioEndpoints = [
     u => `${config.NEXRAY_API}/downloader/ytmp3?url=${encodeURIComponent(u)}`,
     u => `${config.ELITE_API}/ytdown?format=mp3&url=${encodeURIComponent(u)}`,
     u => `${config.OKATSU_API}/downloader/ytmp3?url=${encodeURIComponent(u)}`,
-    u => `${config.PREXZY_API}/download/aio?url=${encodeURIComponent(u)}`
+    u => `${config.PREXZY_API}/download/aio?url=${encodeURIComponent(u)}`,
+    u => `https://api-faa.my.id/faa/ytmp3?url=${encodeURIComponent(u)}`
 ];
 
 async function queryAudioEndpoints(videoUrl, timeout = 30000) {
@@ -384,6 +385,8 @@ async function ytDownloadMp4(url) {
         async () => { const { data } = await axios.get(`${config.PRINCE_API}/download/ytmp4?apikey=${config.PRINCE_KEY}&url=${encodeURIComponent(url)}`, { timeout: 30000 }); const dl = data?.result?.download_url || data?.download_url; if (dl) return dl; throw new Error('no url'); },
         async () => { const { data } = await axios.get(`${config.PRINCE_API}/download/ytv?apikey=${config.PRINCE_KEY}&url=${encodeURIComponent(url)}`, { timeout: 30000 }); const dl = data?.result?.download_url || data?.download_url; if (dl) return dl; throw new Error('no url'); },
         async () => { const { data } = await axios.get(`${config.NEXRAY_API}/downloader/ytplayvid?url=${encodeURIComponent(url)}`, { timeout: 30000 }); const dl = data?.result?.download_url || data?.url; if (dl) return dl; throw new Error('no url'); },
+        async () => { const { data } = await axios.get(`https://api-faa.my.id/faa/ytmp4?url=${encodeURIComponent(url)}`, { timeout: 30000 }); const dl = data?.result?.download_url || data?.result?.mp4 || data?.download_url; if (dl) return dl; throw new Error('no url'); },
+        async () => { const { data } = await axios.get(`${config.NEXRAY_API}/downloader/ytmp4?url=${encodeURIComponent(url)}`, { timeout: 30000 }); const dl = data?.result?.download_url || data?.result?.url || data?.url; if (dl) return dl; throw new Error('no url'); },
         async () => { const { data } = await axios.get(`${config.ELITE_API}/ytmp4?url=${encodeURIComponent(url)}`, { timeout: 30000 }); const dl = data?.result?.download_url || data?.download_url; if (dl) return dl; throw new Error('no url'); }
     ]) { try { const dl = await fn(); if (dl) return dl; } catch {} }
     return null;

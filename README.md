@@ -55,3 +55,6 @@ Automating a personal WhatsApp account can get it banned. Use a spare number.
 - **`.repo`** shows the pairing repo https://github.com/whitekidtechzw-creator/whitekid-prime-pair (set `BOT_REPO_URL` to add the bot repo too).
 - **Welcome message** sent to the owner's inbox after pairing was redesigned.
 - Menu entries without handlers are fixed (`devdetails`, `desc`, `admin`, `greet`); `spam` was removed from the menu.
+
+## v8 additions
+~190 extra commands (downloaders, YouTube tools, converters, text-to-speech, sticker tools, reactions, pictures, group admin, bot info) and 8 new AI commands. See `APIS.md` for every API used. Optional `.env`: `TENOR_API_KEY` (gif + emojimix), `FFMPEG_PATH`. Converters need ffmpeg on the host.

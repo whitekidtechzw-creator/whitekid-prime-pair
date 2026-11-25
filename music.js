@@ -69,6 +69,21 @@ async function searchOne(query) {
     return v ? toTrack(v) : null;
 }
 
+// several results for .yts: yt-search → YouTube page → api-faa search
+async function searchVideos(query) {
+    for (const q of queryVariants(query)) {
+        let v = [];
+        try { const r = await yts(q); v = (r && r.videos) || []; } catch { /* next source */ }
+        if (!v.length) { try { v = await scrapeYouTube(q); } catch { /* next source */ } }
+        if (v.length) return v.slice(0, 10).map(toTrack);
+    }
+    try {
+        const { data } = await axios.get(`https://api-faa.my.id/faa/youtube?q=${encodeURIComponent(query)}`, { timeout: 20000 });
+        if (data && data.status && Array.isArray(data.result)) return data.result.slice(0, 10).map(r => ({ url: r.link, title: r.title, duration: r.duration, author: r.author || r.channel, thumb: r.imageUrl }));
+    } catch { /* none */ }
+    return [];
+}
+
 async function findTrack(q) {
     const m = String(q).match(YT_ID);
     try {
@@ -89,6 +104,11 @@ async function findTrack(q) {
         const r = data && data.result;
         if (r && r.download_url) return { url: r.video_url || r.url || r.download_url, title: r.title || String(q), duration: r.duration || 'N/A', author: r.channel || r.author, thumb: r.thumbnail, direct: r.download_url };
     } catch (e) { console.error('[MUSIC api search]', e.message); }
+    try {
+        const { data } = await axios.get(`https://api-faa.my.id/faa/ytplay?query=${encodeURIComponent(q)}`, { timeout: 30000 });
+        const r = data && data.status && data.result;
+        if (r && r.mp3) return { url: r.url || r.link || r.mp3, title: r.title || String(q), duration: r.duration || 'N/A', author: r.author, thumb: r.thumbnail, direct: r.mp3 };
+    } catch (e) { console.error('[MUSIC faa ytplay]', e.message); }
     return null;
 }
 
@@ -175,4 +195,4 @@ async function playVideo({ socket, from, fakeCard, q, reply, react, prefix }) {
     } catch (e) { await react('⚠️'); await reply(`⚠️ Video failed\n\n${e.message}. Try again in a minute.`); }
 }
 
-module.exports = { findTrack, playAudio, playVideo, queryVariants, scrapeYouTube, sniffAudio };
+module.exports = { searchVideos, findTrack, playAudio, playVideo, queryVariants, scrapeYouTube, sniffAudio };

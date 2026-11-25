@@ -77,6 +77,8 @@ function chain(cmd, user, system) {
     }
     list.push(['pollinations text', () => http(`https://text.pollinations.ai/${enc(user.slice(0, 1500))}?model=${pm}&system=${enc(system.slice(0, 400))}&private=true`, { text: true, timeout: 40000 })]);
     list.push(['hostify grok', () => http('https://api.hostify.indevs.in/api/ai/grok', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ message: flat(system, user) }), timeout: 30000 })]);
+    list.push(['faa gemini', () => http(`https://api-faa.my.id/faa/gemini-ai?text=${enc(flat(system, user))}`, { timeout: 30000 })]);
+    list.push(['hercai', () => http(`https://hercai.onrender.com/v3/hercai?question=${enc(flat(system, user))}`, { timeout: 30000 })]);
     list.push(['dreaded gemini', () => http(`https://api.dreaded.site/api/gemini?text=${enc(flat(system, user))}`, { timeout: 25000 })]);
     list.push(['siputzx deepseek', () => http(`https://api.siputzx.my.id/api/ai/deepseek?text=${enc(flat(system, user))}`, { timeout: 25000 })]);
     return list;
@@ -122,6 +124,14 @@ const SPECS = {
     mathgpt: { title: 'MathGPT', icon: '🔢', react: '🔢', usage: 'mathgpt <math problem>', system: BASE_SYSTEM + ' You are a patient maths tutor: solve step by step, then state the final answer clearly.' },
     aicode: { title: 'AI Code', icon: '💻', react: '💻', usage: 'aicode <what to build>', system: BASE_SYSTEM + ' Write clean, working, commented code in a fenced block, then explain it in one or two lines.' },
     animeai: { title: 'Anime AI', icon: '🌸', react: '🌸', usage: 'animeai <say something>', system: BASE_SYSTEM + ' Role-play as Prime-chan, a cheerful, playful anime girl. Stay in character, use a few emojis, keep replies short.' },
+    aiwrite: { title: 'AI Writer', icon: '✍️', react: '✍️', usage: 'aiwrite <topic or what to write>', system: BASE_SYSTEM + ' Write a well-structured piece of writing on the requested topic.' },
+    aiexplain: { title: 'AI Explain', icon: '🎓', react: '🎓', usage: 'aiexplain <anything>', system: BASE_SYSTEM + ' Explain the topic simply, like to a curious teenager, with one short example.' },
+    aigrammar: { title: 'AI Grammar', icon: '✅', react: '✅', usage: 'aigrammar <text>   (or reply to a message)', system: BASE_SYSTEM + ' Correct spelling and grammar. Reply with the corrected text first, then a one-line list of what changed.' },
+    airecipe: { title: 'AI Recipe', icon: '🍲', react: '🍲', usage: 'airecipe <dish or ingredients you have>', system: BASE_SYSTEM + ' Give a simple recipe: ingredients, then short numbered steps.' },
+    aiemail: { title: 'AI Email', icon: '📧', react: '📧', usage: 'aiemail <what the email is about>', system: BASE_SYSTEM + ' Write a clear, polite email with a subject line.' },
+    aipoem: { title: 'AI Poem', icon: '🪶', react: '🪶', usage: 'aipoem <topic>', system: BASE_SYSTEM + ' Write a short original poem on the topic.' },
+    aistory: { title: 'AI Story', icon: '📖', react: '📖', usage: 'aistory <idea>', system: BASE_SYSTEM + ' Write a short, original story (under 250 words) with a clear ending.' },
+    aiplan: { title: 'AI Planner', icon: '🗓️', react: '🗓️', usage: 'aiplan <goal>', system: BASE_SYSTEM + ' Turn the goal into a practical step-by-step plan with realistic timings.' },
     aisummary: { title: 'AI Summary', icon: '📝', react: '📝', usage: 'aisummary <text>   (or reply to a message)', system: BASE_SYSTEM + ' Summarise the user text into a few clear bullet points, then one line of takeaway.' },
     aitranslate: { title: 'AI Translate', icon: '🌍', react: '🌍', usage: 'aitranslate <language> | <text>   (or reply to a message: aitranslate french)' }
 };
@@ -155,7 +165,7 @@ async function handle(cmd, q, { quoted = '', translateLib = null } = {}) {
     }
 
     let input = q;
-    if (cmd === 'aisummary') input = q || quoted;
+    if (cmd === 'aisummary' || cmd === 'aigrammar') input = q || quoted;
     else if (q && quoted) input = `${q}\n\n(Context — the message being replied to:)\n${quoted}`;
     else if (!q) input = quoted;
     if (!input) return { usage: spec.usage };

@@ -114,7 +114,7 @@ const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '');
 function menuSections(p = '.', WK7 = null) {
     const secs = MENU.map(([name, cmds]) => ({ name, icon: ICONS[name] || '✦', cmds }));
     if (WK7 && typeof WK7.categories === 'function') {
-        for (const [, v] of WK7.categories()) if (v.names.length) secs.push({ name: 'V7 ' + v.title, icon: v.icon || '✦', cmds: v.names });
+        for (const [, v] of WK7.categories()) if (v.names.length) secs.push({ name: (v.tag || 'V7') + ' ' + v.title, icon: v.icon || '✦', cmds: v.names });
     }
     for (const s of secs) {
         const lines = [`╭─❮ ${s.icon} ${bold(s.name)} ❯─────`];
