@@ -58,3 +58,6 @@ Automating a personal WhatsApp account can get it banned. Use a spare number.
 
 ## v8 additions
 ~190 extra commands (downloaders, YouTube tools, converters, text-to-speech, sticker tools, reactions, pictures, group admin, bot info) and 8 new AI commands. See `APIS.md` for every API used. Optional `.env`: `TENOR_API_KEY` (gif + emojimix), `FFMPEG_PATH`. Converters need ffmpeg on the host.
+
+## v9 additions (Knightbot pack)
+~85 more commands: image effects (`.heart .triggered .tweet .jail …`), text logos (`.metallic .blackpink .glitch …`), pies/anime, fun texts, `.gpt`, `.ss`, `.removebg`, `.remini`, `.sora`, `.telesticker`, `.listadmin`, `.tagnotadmin`, plus more song/video/AI download sources. Run `npm install` (adds `mumaker`). Optional `.env`: `KNIGHT_API_KEY`, `TG_TOKEN`.

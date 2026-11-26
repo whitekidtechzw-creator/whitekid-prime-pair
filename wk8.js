@@ -334,7 +334,7 @@ grpDef(['groupinfo', 'gcinfo'], '', async c => {
     const text = `👥 ${m.subject}\n\n🆔 ${m.id}\n📅 Created: ${new Date((m.creation || 0) * 1000).toDateString()}\n👤 Members: ${m.participants.length}\n🛡️ Admins: ${admins.length}\n🔒 Messages: ${m.announce ? 'admins only' : 'everyone'}\n\n📝 ${m.desc || 'No description'}`;
     if (pic) await snd(c, { image: { url: pic }, caption: text }); else await c.reply(text);
 });
-grpDef(['hidetag', 'htag', 'tagall2'], '<message>', async c => {
+grpDef(['hidetag', 'htag', 'tag', 'tagall2'], '<message>', async c => {
     const m = await c.socket.groupMetadata(c.from); const quoted = c.msg.message?.extendedTextMessage?.contextInfo?.quotedMessage; const txt = c.textIn || (quoted && (quoted.conversation || quoted.extendedTextMessage?.text)) || '📢';
     await c.socket.sendMessage(c.from, { text: txt, mentions: m.participants.map(p => p.id) }, { quoted: c.msg });
 });
@@ -379,4 +379,4 @@ def('botx', ['chreact', 'chreactin', 'channelreact', 'creact'], '<channel post l
 });
 
 const NAMES = new Set(); for (const [, v] of CATS) if (v.tag === 'V8') v.names.forEach(n => NAMES.add(n));
-module.exports = { NAMES, API, PROBES, deepUrls, jpegsToPdf, jpegSize, memeText, fetchMedia };
+module.exports = { H: { snd, jget, getBuf, mediaOf, catbox, targetOf, ff, deepUrls, kindOf }, NAMES, API, PROBES, deepUrls, jpegsToPdf, jpegSize, memeText, fetchMedia };

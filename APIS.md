@@ -20,3 +20,11 @@ Google TTS (say commands) · QRServer · TinyURL · catbox (temporary upload for
 Tenor (gif, emojimix) — needs your own free key: `TENOR_API_KEY` in `.env`
 
 Credits: many endpoints and command ideas come from Atlas-MD by FantoX (MIT licence).
+
+## Added in v9 (from Knightbot-MD, ISC licence)
+- **Song / play audio sources:** Knight API (`knightbotapi.stream`, key `KNIGHT_API_KEY`, default `knight`), Hector worker, Yupra, Izumi, EliteProTech, Keith (`apis-keith.vercel.app`) — added to the existing chain
+- **Video sources:** Knight ytmp4, Prince `ytvideo`, Hector, EliteProTech mp4, Yupra mp4, Okatsu mp4
+- **AI:** Knight chat + gpt, Shizo gpt, Zell chatbot, Vapis Gemini
+- **Image effects:** some-random-api canvas (misc + overlay) · **Pies:** shizo.top · **Anime:** some-random-api animu
+- **Fun texts:** shizoapi texts, Prince roseday · **Tools:** siputzx ssweb + removebg, Prince remini, Okatsu text-to-video
+- **Text logos:** ephoto360 through the `mumaker` package · **Telegram stickers:** Telegram Bot API (`TG_TOKEN`)

@@ -158,7 +158,13 @@ const audioEndpoints = [
     u => `${config.ELITE_API}/ytdown?format=mp3&url=${encodeURIComponent(u)}`,
     u => `${config.OKATSU_API}/downloader/ytmp3?url=${encodeURIComponent(u)}`,
     u => `${config.PREXZY_API}/download/aio?url=${encodeURIComponent(u)}`,
-    u => `https://api-faa.my.id/faa/ytmp3?url=${encodeURIComponent(u)}`
+    u => `https://api-faa.my.id/faa/ytmp3?url=${encodeURIComponent(u)}`,
+    u => `https://knightbotapi.stream/api/download/ytaudio?apikey=${process.env.KNIGHT_API_KEY || 'knight'}&format=128kbps&url=${encodeURIComponent(u)}`,
+    u => `https://yt-dl.officialhectormanuel.workers.dev/?url=${encodeURIComponent(u)}`,
+    u => `https://api.yupra.my.id/api/downloader/ytmp3?url=${encodeURIComponent(u)}`,
+    u => `https://izumiiiiiiii.dpdns.org/downloader/youtube?url=${encodeURIComponent(u)}&format=mp3`,
+    u => `https://eliteprotech-apis.zone.id/ytdown?url=${encodeURIComponent(u)}&format=mp3`,
+    u => `https://apis-keith.vercel.app/download/dlmp3?url=${encodeURIComponent(u)}`
 ];
 
 async function queryAudioEndpoints(videoUrl, timeout = 30000) {
@@ -176,7 +182,7 @@ async function queryAudioEndpoints(videoUrl, timeout = 30000) {
 
 function extractAudioUrl(data) {
     const d = data || {}, r = d.result, x = d.data;
-    const c = [d.mp3, d.audio, d.download_url, d.url, d.dl, r && r.download_url, r && r.audio, r && r.mp3, r && r.url, typeof r === 'string' ? r : null, x && x.download_url, x && x.url, x && x.mp3];
+    const c = [d.mp3, d.audio, d.download_url, d.downloadURL, d.url, d.dl, r && r.download_url, r && r.downloadUrl, r && r.download, r && r.dl_url, r && r.dl, r && r.audio, r && r.mp3, r && r.url, typeof r === 'string' ? r : null, x && x.download_url, x && x.url, x && x.mp3];
     return c.find(v => typeof v === 'string' && /^https?:\/\//.test(v)) || null;
 }
 
@@ -387,6 +393,12 @@ async function ytDownloadMp4(url) {
         async () => { const { data } = await axios.get(`${config.NEXRAY_API}/downloader/ytplayvid?url=${encodeURIComponent(url)}`, { timeout: 30000 }); const dl = data?.result?.download_url || data?.url; if (dl) return dl; throw new Error('no url'); },
         async () => { const { data } = await axios.get(`https://api-faa.my.id/faa/ytmp4?url=${encodeURIComponent(url)}`, { timeout: 30000 }); const dl = data?.result?.download_url || data?.result?.mp4 || data?.download_url; if (dl) return dl; throw new Error('no url'); },
         async () => { const { data } = await axios.get(`${config.NEXRAY_API}/downloader/ytmp4?url=${encodeURIComponent(url)}`, { timeout: 30000 }); const dl = data?.result?.download_url || data?.result?.url || data?.url; if (dl) return dl; throw new Error('no url'); },
+        async () => { const { data } = await axios.get(`https://knightbotapi.stream/api/download/ytmp4?apikey=${process.env.KNIGHT_API_KEY || 'knight'}&format=720p&url=${encodeURIComponent(url)}`, { timeout: 60000 }); const dl = data?.result?.download || data?.result?.dl_url || data?.result?.downloadUrl; if (dl) return dl; throw new Error('no url'); },
+        async () => { const { data } = await axios.get(`${config.PRINCE_API}/download/ytvideo?apikey=${config.PRINCE_KEY}&quality=720&url=${encodeURIComponent(url)}`, { timeout: 30000 }); const r = data?.result || data; const dl = r?.downloadUrl || r?.download_url || r?.video; if (dl) return dl; throw new Error('no url'); },
+        async () => { const { data } = await axios.get(`https://yt-dl.officialhectormanuel.workers.dev/?url=${encodeURIComponent(url)}`, { timeout: 30000 }); const v = data?.videos || data?.result?.videos || {}; const dl = ['720', '480', '360', '1080', '240'].map(q => v[q] || v[q + 'p']).find(Boolean); if (dl) return dl; throw new Error('no url'); },
+        async () => { const { data } = await axios.get(`https://eliteprotech-apis.zone.id/ytdown?url=${encodeURIComponent(url)}&format=mp4`, { timeout: 30000 }); const dl = data?.downloadURL; if (dl) return dl; throw new Error('no url'); },
+        async () => { const { data } = await axios.get(`https://api.yupra.my.id/api/downloader/ytmp4?url=${encodeURIComponent(url)}`, { timeout: 30000 }); const dl = data?.data?.download_url; if (dl) return dl; throw new Error('no url'); },
+        async () => { const { data } = await axios.get(`https://okatsu-rolezapiiz.vercel.app/downloader/ytmp4?url=${encodeURIComponent(url)}`, { timeout: 30000 }); const dl = data?.result?.mp4; if (dl) return dl; throw new Error('no url'); },
         async () => { const { data } = await axios.get(`${config.ELITE_API}/ytmp4?url=${encodeURIComponent(url)}`, { timeout: 30000 }); const dl = data?.result?.download_url || data?.download_url; if (dl) return dl; throw new Error('no url'); }
     ]) { try { const dl = await fn(); if (dl) return dl; } catch {} }
     return null;

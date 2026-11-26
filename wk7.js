@@ -7,6 +7,7 @@
 const core = require('./wk7-core');
 require('./wk7-text'); require('./wk7-math'); require('./wk7-info'); require('./wk7-fun'); require('./wk7-net');
 let WK8 = null; try { WK8 = require('./wk8'); } catch (e) { console.error('⚠️ wk8 pack failed to load (bot continues without it):', e.message); }
+let WK9 = null; try { WK9 = require('./wk9'); } catch (e) { console.error('⚠️ wk9 pack failed to load (bot continues without it):', e.message); }
 const { def, category, REG, CATS, fx, U, clip } = core;
 
 category('sys', '🛠️', 'PACK TOOLS');
@@ -88,7 +89,7 @@ function summarize(results, title) {
 def('sys', 'apicheck', '[pack | all]  (owner only) — tests the APIs and reports which are down', async c => {
     if (!c.isOwner) return c.reply('🔐 Owner-only command.');
     const mode = (c.args[0] || 'all').toLowerCase();
-    const targets = [...PROBES, ...(WK8 ? WK8.PROBES : [])]; if (mode !== 'pack' && Array.isArray(c.apiTargets)) targets.push(...c.apiTargets);
+    const targets = [...PROBES, ...(WK8 ? WK8.PROBES : []), ...(WK9 ? WK9.PROBES : [])]; if (mode !== 'pack' && Array.isArray(c.apiTargets)) targets.push(...c.apiTargets);
     await c.reply(`🔎 Testing ${targets.length} endpoints… this can take up to a minute.`);
     const res = await probeAll(targets);
     core.resetCooling();

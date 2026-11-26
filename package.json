@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "node guard.test.js && node page.test.js && node wk7.test.js && node wk8.test.js && node ui.test.js && node smoke.test.js",
+    "test": "node guard.test.js && node page.test.js && node wk7.test.js && node wk8.test.js && node wk9.test.js && node ui.test.js && node smoke.test.js",
     "check": "node --check index.js && node --check commands.js && node --check handler.js && node --check manager.js",
     "apicheck": "node apicheck.js"
   },
@@ -34,6 +34,7 @@
     "qrcode": "^1.5.4",
     "ruhend-scraper": "^9.0.1",
     "sharp": "^0.33.5",
+    "mumaker": "^2.0.0",
     "wa-sticker-formatter": "^4.4.4",
     "yt-search": "^2.12.1"
   }

@@ -77,6 +77,11 @@ function chain(cmd, user, system) {
     }
     list.push(['pollinations text', () => http(`https://text.pollinations.ai/${enc(user.slice(0, 1500))}?model=${pm}&system=${enc(system.slice(0, 400))}&private=true`, { text: true, timeout: 40000 })]);
     list.push(['hostify grok', () => http('https://api.hostify.indevs.in/api/ai/grok', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ message: flat(system, user) }), timeout: 30000 })]);
+    list.push(['knight chat', () => http(`https://knightbotapi.stream/api/ai/chat?apikey=${process.env.KNIGHT_API_KEY || 'knight'}&text=${enc(flat(system, user))}&query=${enc(flat(system, user))}`, { timeout: 40000 })]);
+    list.push(['knight gpt', () => http(`https://knightbotapi.stream/api/ai/gpt?apikey=${process.env.KNIGHT_API_KEY || 'knight'}&text=${enc(flat(system, user))}&query=${enc(flat(system, user))}`, { timeout: 40000 })]);
+    list.push(['shizo gpt', () => http(`https://api.shizo.top/ai/gpt?apikey=shizo&query=${enc(flat(system, user))}`, { timeout: 30000 })]);
+    list.push(['zell chatbot', () => http(`https://zellapi.autos/ai/chatbot?text=${enc(flat(system, user))}`, { timeout: 30000 })]);
+    list.push(['vapis gemini', () => http(`https://vapis.my.id/api/gemini?q=${enc(flat(system, user))}`, { timeout: 30000 })]);
     list.push(['faa gemini', () => http(`https://api-faa.my.id/faa/gemini-ai?text=${enc(flat(system, user))}`, { timeout: 30000 })]);
     list.push(['hercai', () => http(`https://hercai.onrender.com/v3/hercai?question=${enc(flat(system, user))}`, { timeout: 30000 })]);
     list.push(['dreaded gemini', () => http(`https://api.dreaded.site/api/gemini?text=${enc(flat(system, user))}`, { timeout: 25000 })]);

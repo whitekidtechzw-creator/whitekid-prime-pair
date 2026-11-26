@@ -298,6 +298,7 @@ case 'txt2img': {
 
 // ─── SONG / PLAY (music.js) ──────────────────────────────────────────────────
 case 'play':
+case 'music':
 case 'mp3':
 case 'yt':
 case 'ytplay':
