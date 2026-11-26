@@ -108,9 +108,11 @@ async function onConnectionUpdate(number, socket, { connection, lastDisconnect }
     dispose(socket);
     const restart = status === DisconnectReason.restartRequired; // normal right after pairing
     const attempt = restart ? 0 : (retries.get(number) || 0) + 1;
-    if (attempt > MAX_RECONNECTS) { console.error('❌ ' + number + ': giving up after ' + MAX_RECONNECTS + ' reconnect attempts'); current.delete(number); return; }
-    retries.set(number, attempt);
-    const wait = restart ? 500 : Math.min(30000, 1000 * 2 ** attempt);
+    // after MAX_RECONNECTS fast attempts keep trying every 5 minutes instead of dropping a paired session until the next restart
+    const slow = attempt > MAX_RECONNECTS;
+    if (slow && attempt === MAX_RECONNECTS + 1) console.error('⚠️ ' + number + ': ' + MAX_RECONNECTS + ' fast reconnects failed, switching to one try every 5 minutes');
+    retries.set(number, Math.min(attempt, MAX_RECONNECTS + 1));
+    const wait = restart ? 500 : slow ? 5 * 60 * 1000 : Math.min(30000, 1000 * 2 ** attempt);
     console.log('🔁 ' + number + ' reconnecting in ' + Math.round(wait / 1000) + 's (attempt ' + attempt + ')');
     setTimeout(() => {
         if (current.get(number) !== socket) return; // superseded or ended meanwhile

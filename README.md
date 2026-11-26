@@ -1,4 +1,4 @@
-# Whitekid Prime v7.2
+# Whitekid Prime v9.1
 
 A multi-device WhatsApp bot (350+ commands) with a web page where people pair their number, plus an optional Telegram pairing bot. This is the v7 bot restructured into the same flat layout as `astra-md-mini-v2-flat`.
 
@@ -61,3 +61,8 @@ Automating a personal WhatsApp account can get it banned. Use a spare number.
 
 ## v9 additions (Knightbot pack)
 ~85 more commands: image effects (`.heart .triggered .tweet .jail …`), text logos (`.metallic .blackpink .glitch …`), pies/anime, fun texts, `.gpt`, `.ss`, `.removebg`, `.remini`, `.sora`, `.telesticker`, `.listadmin`, `.tagnotadmin`, plus more song/video/AI download sources. Run `npm install` (adds `mumaker`). Optional `.env`: `KNIGHT_API_KEY`, `TG_TOKEN`.
+
+## v9.1 changes
+- **Menu**: the stats card and every category now arrive as ONE message. v7/v8/v9 commands sit inside the matching main section (YouTube tools and downloaders under DOWNLOADS, text logos under LOGO MAKER, group tools under GROUP ADMIN, and so on) instead of separate V7/V8/V9 blocks. Each header shows its command count.
+- **Stability**: the antidelete cache is capped (`MESSAGE_STORE_MAX`, default 2000) and deletes evicted media files; paired sessions keep retrying every 5 minutes after the fast reconnects fail instead of being dropped until a restart; scheduled messages use the newest connection and are retried for 10 minutes if a send fails instead of being lost.
+- Optional `.env`: `OPENWEATHER_KEY` for `.weather`.

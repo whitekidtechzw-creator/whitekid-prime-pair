@@ -89,7 +89,21 @@ global.pairCodeStore = global.pairCodeStore || new Map();
 
 const activeSockets = new Map(), socketCreationTime = new Map(), qrMessages = new Map();
 
-const userState = {}, messageStore = new Map();
+// antidelete cache: bounded, so a busy bot cannot grow memory (and the temp folder) forever
+class CappedStore extends Map {
+    constructor(max = Number(process.env.MESSAGE_STORE_MAX) || 2000) { super(); this.max = max; }
+    set(k, v) {
+        if (super.has(k)) super.delete(k);
+        super.set(k, v);
+        while (this.size > this.max) {
+            const oldest = this.keys().next().value, old = this.get(oldest);
+            super.delete(oldest);
+            try { if (old && old.mediaPath) require('fs').unlinkSync(old.mediaPath); } catch { /* already gone */ }
+        }
+        return this;
+    }
+}
+const userState = {}, messageStore = new CappedStore();
 
 const botStartTime = Date.now();
 

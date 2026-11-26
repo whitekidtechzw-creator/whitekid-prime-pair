@@ -86,7 +86,25 @@ function parseTime(input) { const now = new Date(); const rm = input.match(/^(?:
 
 function formatTimeLeft(ms) { if (ms <= 0) return 'now'; const ts = Math.floor(ms / 1000), h = Math.floor(ts / 3600), m = Math.floor((ts % 3600) / 60), s = ts % 60; const p = []; if (h) p.push(`${h}h`); if (m) p.push(`${m}m`); if (s || !p.length) p.push(`${s}s`); return p.join(' '); }
 
-function startScheduler(sock) { if (_schedulerStarted) return; _schedulerStarted = true; setInterval(async () => { try { const now = Date.now(), sched = await loadSchedules(); const rem = []; let ch = false; for (const item of sched) { if (now >= item.sendAt) { try { await sock.sendMessage(item.chatId, { text: item.message }); console.log(`[SCHEDULE] ✅ Sent ID:${item.id}`); } catch (e) { console.error(`[SCHEDULE] Failed:`, e.message); } ch = true; } else rem.push(item); } if (ch) await saveSchedules(rem); } catch (e) { console.error('[SCHEDULE] Error:', e.message); } }, 10000); }
+let _schedSock = null;
+function startScheduler(sock) {
+    _schedSock = sock;   // always the newest connection, so a reconnect does not strand scheduled messages
+    if (_schedulerStarted) return; _schedulerStarted = true;
+    setInterval(async () => {
+        try {
+            const now = Date.now(), sched = await loadSchedules(); const rem = []; let ch = false;
+            for (const item of sched) {
+                if (now < item.sendAt) { rem.push(item); continue; }
+                try { await _schedSock.sendMessage(item.chatId, { text: item.message }); console.log(`[SCHEDULE] ✅ Sent ID:${item.id}`); ch = true; }
+                catch (e) {
+                    console.error(`[SCHEDULE] Failed:`, e.message);
+                    if (now - item.sendAt < 10 * 60 * 1000) rem.push(item); else ch = true;   // retry for 10 minutes, then drop
+                }
+            }
+            if (ch) await saveSchedules(rem);
+        } catch (e) { console.error('[SCHEDULE] Error:', e.message); }
+    }, 10000);
+}
 
 class TicTacToeGame { constructor(pX, pO) { this.playerX = pX; this.playerO = pO; this.board = Array(9).fill(null); this.currentTurn = pX; this.winner = null; this.turns = 0; } turn(player, pos) { if (this.winner || player !== this.currentTurn || this.board[pos] !== null) return false; this.board[pos] = player === this.playerX ? 'X' : 'O'; this.turns++; this.checkWinner(); if (!this.winner) this.currentTurn = this.currentTurn === this.playerX ? this.playerO : this.playerX; return true; } checkWinner() { const lines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]]; for (const [a, b, c] of lines) { if (this.board[a] && this.board[a] === this.board[b] && this.board[a] === this.board[c]) { this.winner = this.board[a] === 'X' ? this.playerX : this.playerO; return; } } if (this.turns === 9) this.winner = 'draw'; } render() { return this.board.map(c => c || ' '); } }
 

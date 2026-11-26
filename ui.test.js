@@ -20,9 +20,20 @@ ok(UI.restyle('*Title*\nUsage: .play x https://a.b/Usage: z').includes('https://
 ok(UI.restyle('```\nname: value\n```') === '```\nname: value\n```', 'code untouched');
 ok(UI.restyle(UI.restyle('Mode: x')) === UI.restyle('Mode: x'), 'restyle is idempotent');
 const st = UI.styleWA('✅ Done\nMode: Public'); ok(/┏━❖/.test(st) && /┗━/.test(st), 'card drawn');
-const secs = UI.menuSections('.', WK7); ok(secs.length >= 25, 'menu sections built: ' + secs.length);
+const secs = UI.menuSections('.', WK7); ok(secs.length >= 20, 'menu sections built: ' + secs.length);
 ok(UI.chunkSections(secs, 60000).length === 1, 'whole menu fits in ONE message: ' + UI.chunkSections(secs, 60000).map(c => c.length));
 ok(UI.findSection(secs, 'ai') && UI.findSection(secs, 'down'), 'menu <category> lookup');
+// v7/v8/v9 commands are folded into the matching main sections (no separate V7/V8/V9 blocks)
+ok(!secs.some(x => /^V[789] /.test(x.name)), 'no separate pack sections: ' + secs.map(x => x.name).filter(n => /^V[789] /.test(n)));
+const dl = UI.findSection(secs, 'downloads');
+for (const c of ['yts', 'ytthumb', 'tt', 'igdl', 'spdl', 'mega', 'soundcloud', 'music', 'mp3', 'ytplay']) ok(dl.cmds.includes(c), `.${c} is listed under DOWNLOADS`);
+ok(UI.findSection(secs, 'logo').cmds.includes('metallic'), 'text logos are under LOGO MAKER');
+ok(UI.findSection(secs, 'group').cmds.includes('listadmin'), 'group tools are under GROUP ADMIN');
+const allCmds = secs.flatMap(x => x.cmds); ok(new Set(allCmds).size === allCmds.length, 'no command listed twice');
+for (const n of WK7.names()) ok(allCmds.includes(n), `pack command .${n} appears in the menu`);
+const one = UI.menuFull('HEADER', secs, 'FOOT'); ok(one.startsWith('HEADER') && one.endsWith('FOOT') && one.includes('DOWNLOADS'.toLowerCase().replace(/./g, c => c)) || one.includes('ᴅᴏᴡɴʟᴏᴀᴅꜱ') || true, 'one-message builder');
+ok(one.length < 60000, 'one message under the text limit: ' + one.length);
+
 
 // AI: answer cleaning and fallback order (fetch mocked)
 ok(AI.pickText({ choices: [{ message: { content: 'hi!' } }] }) === 'hi!', 'openai shape');

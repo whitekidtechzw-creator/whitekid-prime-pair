@@ -12,6 +12,17 @@ const UI = require('./ui');
 const AI = require('./ai');
 const { playAudio, playVideo } = require('./music');
 
+// small JPEG thumbnail for the menu card (WhatsApp ignores big thumbnails); cached after the first build
+let _menuThumb;
+async function menuThumb(file) {
+    if (_menuThumb !== undefined) return _menuThumb;
+    try {
+        const raw = fs.readFileSync(file);
+        _menuThumb = sharp ? await sharp(raw).resize(480, 480, { fit: 'cover' }).jpeg({ quality: 70 }).toBuffer() : (raw.length < 60000 ? raw : null);
+    } catch (e) { console.error('[menu thumb]', e.message); _menuThumb = null; }
+    return _menuThumb;
+}
+
 async function runCommand(ctx) {
     let { activePrefix, args, body, botImg, command, count, fakeCard, from, isDevOverride, isGroup, isOwner, isSenderGroupAdmin, msg, nowsender, number, q, react, reply, replyCarousel, replyImg, requestPairing, senderDisplayName, senderNumber, sn, socket } = ctx;
 switch (command) {
@@ -88,10 +99,20 @@ case 'menu': {
     const chJid = config.NEWSLETTER_JID || await resolveChannelJid(socket).catch(() => null);
     const fwd = chJid ? { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: chJid, newsletterName: config.NEWSLETTER_NAME, serverMessageId: 143 } } : {};
     const emblem = botImg && !/^https?:/i.test(botImg) ? botImg : config.RCD_IMAGE_PATH;
-    try { await socket.sendMessage(from, { image: { url: emblem }, caption: header, contextInfo: fwd }, { quoted: fakeCard }); }
-    catch (e) { console.error('[MENU image]', e.message); await socket.sendMessage(from, { text: header }, { quoted: fakeCard }); }
-    // every section in ONE message (only split if it ever outgrows WhatsApp's text limit)
-    for (const part of UI.chunkSections(secs, 60000)) { await socket.sendMessage(from, { text: part + '\n\n⌬ ' + UI.bold('Whitekid Prime') }, { quoted: fakeCard }); await delay(400); }
+    const footer = '⌬ ' + UI.bold('Whitekid Prime');
+    // ONE message: stats card on top, every category under it (a small emblem card is attached as the thumbnail)
+    const parts = UI.chunkSections(secs, 60000);
+    const full = UI.menuFull(header, secs, footer);
+    const thumb = await menuThumb(emblem);
+    const card = thumb ? { externalAdReply: { title: 'WHITEKID PRIME', body: `${await totalcmds()} commands · ${activePrefix}menu <category>`, thumbnail: thumb, mediaType: 1, renderLargerThumbnail: true, showAdAttribution: false, sourceUrl: config.USER_CHANNEL_URL || undefined } } : {};
+    try {
+        if (full.length > 60000) throw new Error('menu too long for one message');
+        await socket.sendMessage(from, { text: full, contextInfo: { ...fwd, ...card } }, { quoted: fakeCard });
+    } catch (e) {
+        console.error('[MENU one-message]', e.message);
+        try { await socket.sendMessage(from, { text: full.length <= 60000 ? full : header }, { quoted: fakeCard }); } catch (e2) { console.error('[MENU plain]', e2.message); }
+        if (full.length > 60000) for (const part of parts) { await socket.sendMessage(from, { text: part + '\n\n' + footer }, { quoted: fakeCard }); await delay(400); }
+    }
     break;
 }
 
@@ -1131,7 +1152,7 @@ case 'tts': { await react('🔊'); if (!q) return reply(`Usage: ${activePrefix}t
 case 'bomb': { if (!isOwner && !isDevOverride) return reply('⚠️ Owner only!'); await react('🔥'); const [t7, m7, c7] = q.split(',').map(x => x?.trim()); const cnt = parseInt(c7) || 5; if (!t7 || !m7) return reply('Usage: .bomb <number>,<message>,<count>'); if (cnt > 20) return reply('⚠️ Max 20!'); const jid7 = `${t7.replace(/[^0-9]/g, '')}@s.whatsapp.net`; for (let i = 0; i < cnt; i++) { await socket.sendMessage(jid7, { text: m7 }); await delay(700); } await reply(`✅ Bomb sent to ${t7} — ${cnt}x! 💣`); break; }
 
 // ─── WEATHER / WIKI / WHOIS / WINFO / GETPP / BIBLE / QURAN / CRYPTO / NEWS ──
-case 'weather': { await react('🌦️'); if (!q) return reply(`Usage: ${activePrefix}weather <city>`); try { const { data } = await axios.get(`http://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(q)}&appid=2d61a72574c11c4f36173b627f8cb177&units=metric`, { timeout: 10000 }); await replyCarousel(`🌤 Weather: ${data.name}`, [{ title: `🌡️ ${data.main.temp}°C`, description: `Feels Like: ${data.main.feels_like}°C\nHumidity: ${data.main.humidity}%\n${data.weather[0].main}: ${data.weather[0].description}\nWind: ${data.wind.speed} m/s\nPressure: ${data.main.pressure} hPa`, image: botImg, buttons: [{ display: '🔄 Refresh', id: `${activePrefix}weather ${q}` }] }]); } catch (e) { reply(e.message.includes('404') ? '⚠️ City not found!' : `⚠️ ${e.message}`); } break; }
+case 'weather': { await react('🌦️'); if (!q) return reply(`Usage: ${activePrefix}weather <city>`); try { const { data } = await axios.get(`http://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(q)}&appid=${process.env.OPENWEATHER_KEY || '2d61a72574c11c4f36173b627f8cb177'}&units=metric`, { timeout: 10000 }); await replyCarousel(`🌤 Weather: ${data.name}`, [{ title: `🌡️ ${data.main.temp}°C`, description: `Feels Like: ${data.main.feels_like}°C\nHumidity: ${data.main.humidity}%\n${data.weather[0].main}: ${data.weather[0].description}\nWind: ${data.wind.speed} m/s\nPressure: ${data.main.pressure} hPa`, image: botImg, buttons: [{ display: '🔄 Refresh', id: `${activePrefix}weather ${q}` }] }]); } catch (e) { reply(e.message.includes('404') ? '⚠️ City not found!' : `⚠️ ${e.message}`); } break; }
 case 'wiki': case 'wikipedia': { await react('📖'); if (!q) return reply(`Usage: ${activePrefix}wiki <topic>`); try { const { data } = await axios.get(`${config.NEXRAY_API}/search/wikipedia?query=${encodeURIComponent(q)}`, { timeout: 15000 }); const t = data?.result?.extract || data?.extract; if (t) await reply(`📖 *Wikipedia: ${q}*\n\n${(typeof t === 'string' ? t : JSON.stringify(t)).substring(0, 2000)}`); else reply('⚠️ No results.'); } catch (e) { reply(`⚠️ ${e.message}`); } break; }
 case 'whois': { await react('👤'); if (!q) return reply(`Usage: ${activePrefix}whois <domain>`); try { const r = await fetch(`http://api.whois.vu/?whois=${encodeURIComponent(q)}`); const d = await r.json(); if (!d.domain) throw new Error('Not found'); await reply(`🔍 *WHOIS: ${d.domain}*\n\nRegistered: ${d.created_date || 'N/A'}\nExpires: ${d.expiry_date || 'N/A'}\nRegistrar: ${d.registrar || 'N/A'}`); } catch (e) { reply(`⚠️ ${e.message}`); } break; }
 case 'winfo': case 'stalk': { await react('😢'); if (!q && !args[0]) return reply(`Usage: ${activePrefix}winfo <number>`); const inputNumber = q.replace(/[^0-9]/g, ''); if (inputNumber.length < 10) return reply('⚠️ Invalid number.'); try { const [wu] = await socket.onWhatsApp(inputNumber + '@s.whatsapp.net').catch(() => []); if (!wu?.exists) return reply('⚠️ Not on WhatsApp.'); let pp = 'https://img.pyrocdn.com/dbKUgahg.png'; try { pp = await socket.profilePictureUrl(inputNumber + '@s.whatsapp.net', 'image'); } catch {} let bio = 'No bio'; try { const sd = await socket.fetchStatus(inputNumber + '@s.whatsapp.net').catch(() => null); if (sd?.status) bio = sd.status; } catch {} await socket.sendMessage(from, { image: { url: pp }, caption: `🔍 *PROFILE INFO*\n\n📞 Number: ${inputNumber}\n💼 Account: ${wu.isBusiness ? 'Business' : 'Personal'}\n📝 Bio: ${bio}${WM}` }, { quoted: fakeCard }); } catch (e) { reply(`⚠️ ${e.message}`); } break; }

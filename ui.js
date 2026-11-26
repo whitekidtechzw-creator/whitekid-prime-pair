@@ -111,13 +111,46 @@ const ICONS = {
 
 const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '');
 
+// every v7/v8/v9 pack category is folded into the main section where it belongs,
+// so people find (for example) the YouTube tools inside DOWNLOADS instead of a separate "V8 YOUTUBE" block
+const PACK_TO_SECTION = {
+    yt: 'DOWNLOADS', dl: 'DOWNLOADS',
+    conv: 'TOOLS', stk: 'TOOLS', ktool: 'TOOLS',
+    react: 'FUN', kfun: 'FUN',
+    pics: 'IMAGES', fx: 'IMAGES',
+    grp: 'GROUP ADMIN',
+    botx: 'GENERAL', sys: 'GENERAL',
+    txt: 'LOGO MAKER',
+    anim: 'ANIME',
+    text: 'TEXT FUN',
+    math: 'UTILITIES', time: 'UTILITIES', gen: 'UTILITIES',
+    games: 'GAMES',
+    info: 'SEARCH', net: 'SEARCH'
+};
+// a few pack commands belong somewhere other than their pack's default section
+const CMD_TO_SECTION = {
+    listadmin: 'GROUP ADMIN', infoadmin: 'GROUP ADMIN', tagnotadmin: 'GROUP ADMIN', tagmembers: 'GROUP ADMIN',
+    sora: 'AI STUDIO', aivideo: 'AI STUDIO', gpt: 'AI CHAT', gpt3: 'AI CHAT',
+    restart: 'OWNER', reboot: 'OWNER', banlist: 'OWNER', listbans: 'OWNER'
+};
+const FIRST = new Set(['yt']);   // pack categories listed right after the core commands, before the rest
+
 function menuSections(p = '.', WK7 = null) {
-    const secs = MENU.map(([name, cmds]) => ({ name, icon: ICONS[name] || '✦', cmds }));
+    const secs = MENU.map(([name, cmds]) => ({ name, icon: ICONS[name] || '✦', cmds: [...cmds] }));
+    const byName = new Map(secs.map(s => [s.name, s]));
     if (WK7 && typeof WK7.categories === 'function') {
-        for (const [, v] of WK7.categories()) if (v.names.length) secs.push({ name: (v.tag || 'V7') + ' ' + v.title, icon: v.icon || '✦', cmds: v.names });
+        const packs = [...WK7.categories()].filter(([, v]) => v.names.length);
+        packs.sort((a, b) => (FIRST.has(b[0]) ? 1 : 0) - (FIRST.has(a[0]) ? 1 : 0));
+        for (const [id, v] of packs) {
+            const target = byName.get(PACK_TO_SECTION[id]);
+            if (target) for (const n of v.names) (byName.get(CMD_TO_SECTION[n]) || target).cmds.push(n);
+            else { const sec = { name: (v.tag || 'V7') + ' ' + v.title, icon: v.icon || '✦', cmds: [...v.names] }; secs.push(sec); byName.set(sec.name, sec); }
+        }
     }
+    const seen = new Set();   // a command shows up once, in the first section that lists it
+    for (const s of secs) { s.cmds = s.cmds.filter(c => !seen.has(c) && seen.add(c)); }
     for (const s of secs) {
-        const lines = [`╭─❮ ${s.icon} ${bold(s.name)} ❯─────`];
+        const lines = [`╭─❮ ${s.icon} ${bold(s.name)} · ${s.cmds.length} ❯─────`];
         for (const c of s.cmds) lines.push(`│ ◦ ${p}${c}`);
         lines.push('╰──────────●');
         s.text = lines.join('\n');
@@ -143,6 +176,11 @@ function menuHeader(i) {
     ], `✦ ${bold('Browse')}: ${i.prefix}menu <category>   e.g. ${i.prefix}menu ai`);
 }
 
+// stats card + every section as ONE message
+function menuFull(header, secs, footer) {
+    return header + '\n\n' + secs.map(s => s.text).join('\n\n') + (footer ? '\n\n' + footer : '');
+}
+
 // split the menu into messages that stay under WhatsApp's comfortable size
 function chunkSections(secs, max = 3600) {
     const out = []; let cur = '';
@@ -154,4 +192,4 @@ function chunkSections(secs, max = 3600) {
     return out;
 }
 
-module.exports = { BRAND, FONT_ON, SMALL, small, bold, card, chunkSections, findSection, menuHeader, menuIndex, menuSections, plain, restyle, styleWA };
+module.exports = { BRAND, FONT_ON, SMALL, small, bold, card, chunkSections, findSection, menuFull, menuHeader, menuIndex, menuSections, plain, restyle, styleWA };
