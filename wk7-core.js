@@ -81,6 +81,7 @@ async function run(cmd, ctx) {
     if (!e) return false;
     const c = {
         ...ctx,
+        command: cmd,
         p: ctx.activePrefix || '.',
         me: ctx.nowsender,
         textIn: ctx.q || ctx.quotedText || '',

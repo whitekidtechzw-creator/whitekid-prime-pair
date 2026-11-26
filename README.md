@@ -1,4 +1,4 @@
-# Whitekid Prime v9.1
+# Whitekid Prime v9.3.1
 
 A multi-device WhatsApp bot (350+ commands) with a web page where people pair their number, plus an optional Telegram pairing bot. This is the v7 bot restructured into the same flat layout as `astra-md-mini-v2-flat`.
 
@@ -66,3 +66,21 @@ Automating a personal WhatsApp account can get it banned. Use a spare number.
 - **Menu**: the stats card and every category now arrive as ONE message. v7/v8/v9 commands sit inside the matching main section (YouTube tools and downloaders under DOWNLOADS, text logos under LOGO MAKER, group tools under GROUP ADMIN, and so on) instead of separate V7/V8/V9 blocks. Each header shows its command count.
 - **Stability**: the antidelete cache is capped (`MESSAGE_STORE_MAX`, default 2000) and deletes evicted media files; paired sessions keep retrying every 5 minutes after the fast reconnects fail instead of being dropped until a restart; scheduled messages use the newest connection and are retried for 10 minutes if a send fails instead of being lost.
 - Optional `.env`: `OPENWEATHER_KEY` for `.weather`.
+
+## v9.2 changes
+- Menu category headers no longer show a command count.
+- Ported from Knightbot-MD / Atlas-MD: `.infogp`, `.setgdesc`, `.anularlink`, `.clearsession`, `.insult` (pack in `wk10.js`), plus aliases `.8ball .ttt .instagram .git .trt .waste .simage .savest .savesm .crop .emix`.
+- Not ported on purpose: Atlas `exec`/`run` and the plugin installer (they run arbitrary code), and `loli`.
+
+## v9.3 changes — automations (autos.js)
+New commands, all saved in `data/autos.json`:
+- `.antibadword on|off|add|remove|list` and `.antitag on|off` — group admins; the bot must be admin to delete messages. Admins and the owner are never touched.
+- `.anticall`, `.pmblocker`, `.autoreact`, `.autotyping` on|off — owner only.
+- `.chatbot on|off` — AI replies in a chat (in groups only when someone replies to or @mentions the bot).
+- `.sudo add|del|list` (aliases `.addmod .delmod .setmod .removemod`) — gives chosen people owner-level access; `.owners` lists everyone.
+- `.topmembers` — most active members of a group (counted from when this version is installed).
+- Extra aliases: `.igs .igsc .sp .h .sc .staff .banuser .unbanuser .setbotmode`.
+- Still not built: `groupstatus/swgc` (depends on the WhatsApp library version), `attp`, `namecard`, `update`.
+
+## v9.3.1
+- Command names in the menu now use the small-caps font too (the prefix stays normal), e.g. `.ᴘʟᴀʏ`. Typing them normally still works.

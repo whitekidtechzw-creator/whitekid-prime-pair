@@ -109,6 +109,9 @@ const ICONS = {
     'LOGO MAKER': '✒️', GAMES: '🎮', 'FUN PACK': '🎲', 'TEXT FUN': '🔤', UTILITIES: '🧮'
 };
 
+// command names in the menu use the small-caps font too (the prefix stays normal)
+const cmdFont = c => (FONT_ON ? small(c) : String(c));
+
 const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '');
 
 // every v7/v8/v9 pack category is folded into the main section where it belongs,
@@ -150,8 +153,8 @@ function menuSections(p = '.', WK7 = null) {
     const seen = new Set();   // a command shows up once, in the first section that lists it
     for (const s of secs) { s.cmds = s.cmds.filter(c => !seen.has(c) && seen.add(c)); }
     for (const s of secs) {
-        const lines = [`╭─❮ ${s.icon} ${bold(s.name)} · ${s.cmds.length} ❯─────`];
-        for (const c of s.cmds) lines.push(`│ ◦ ${p}${c}`);
+        const lines = [`╭─❮ ${s.icon} ${bold(s.name)} ❯─────`];
+        for (const c of s.cmds) lines.push(`│ ◦ ${p}${cmdFont(c)}`);
         lines.push('╰──────────●');
         s.text = lines.join('\n');
         s.key = slug(s.name);
@@ -165,7 +168,7 @@ function findSection(secs, want) {
 }
 
 function menuIndex(secs, p = '.') {
-    return card('Menu index', [...secs.map(s => `${s.icon} ${p}menu ${s.key}  (${s.cmds.length})`), '', `Tip: ${p}menu ai`]);
+    return card('Menu index', [...secs.map(s => `${s.icon} ${p}menu ${cmdFont(s.key)}`), '', `Tip: ${p}menu ai`]);
 }
 
 function menuHeader(i) {

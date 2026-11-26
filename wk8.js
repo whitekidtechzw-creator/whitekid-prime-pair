@@ -142,7 +142,7 @@ def('dl', ['dl', 'download', 'getmedia'], '<link>  (TikTok, Instagram, Facebook,
 });
 platDef(['tt', 'tiktokvid'], 'tt', '<tiktok link>'); platDef(['tw', 'twitter', 'xdl'], 'tw', '<x/twitter link>'); platDef(['vd', 'videy'], 'vd', '<videy link>');
 platDef(['mf', 'mediafiredl'], 'mf', '<mediafire link>'); platDef(['th', 'threads'], 'th', '<threads link>'); platDef(['mg', 'mega'], 'mg', '<mega link>');
-platDef(['soundcloud', 'scdl'], 'sc', '<soundcloud link>'); platDef(['sf', 'sfile'], 'sf', '<sfile link>'); platDef(['igdl', 'instadl'], 'ig', '<instagram link>');
+platDef(['soundcloud', 'scdl', 'sc'], 'sc', '<soundcloud link>'); platDef(['sf', 'sfile'], 'sf', '<sfile link>'); platDef(['igdl', 'instadl'], 'ig', '<instagram link>');
 platDef(['fbdl'], 'fb', '<facebook link>'); platDef(['pindl'], 'pin', '<pinterest link>'); platDef(['spdl', 'spotifydl'], 'sp', '<spotify link>');
 def('dl', ['ttsearch', 'tiktoksearch'], '<query>', async c => {
     if (!c.textIn) return c.reply(U(c.p, 'ttsearch funny cats')); await c.react('🔎');
@@ -227,7 +227,7 @@ def('stk', ['steal', 'take', 'wm'], '<pack | author>  (reply to a sticker)', asy
     const [pack, author] = c.textIn.includes('|') ? c.textIn.split('|').map(s => s.trim()) : [c.textIn.trim() || 'Whitekid Prime', c.senderName || 'WhiteKid Tech'];
     await snd(c, { sticker: await mkSticker(m.buffer, pack, author) });
 });
-def('stk', ['scrop', 'stickercrop', 'sfull'], '(reply to an image/video/sticker)', async c => {
+def('stk', ['scrop', 'stickercrop', 'sfull', 'crop'], '(reply to an image/video/sticker)', async c => {
     if (needFmt(c)) return; const m = await mediaOf(c, ['image', 'video', 'sticker']); if (!m) return c.reply('⚠️ Reply to an image, video or sticker.');
     await snd(c, { sticker: await mkSticker(m.buffer, 'Whitekid Prime', c.senderName || 'WhiteKid Tech', StickerTypes.CROPPED) });
 });
@@ -252,7 +252,7 @@ def('stk', ['q', 'quote', 'quotely'], '<text>  (or reply to a message)', async c
     const d = await r.json(); if (!d.result || !d.result.image) throw new Error('Quote service failed.');
     await snd(c, { sticker: await mkSticker(Buffer.from(d.result.image, 'base64'), 'Whitekid Prime', name) });
 });
-def('stk', ['emojimix'], '<emoji>+<emoji>', async c => {
+def('stk', ['emojimix', 'emix'], '<emoji>+<emoji>', async c => {
     const key = process.env.TENOR_API_KEY; if (!key) return c.reply('⚠️ emojimix needs a free Tenor key: set TENOR_API_KEY in .env (Google Cloud → Tenor API).');
     const [a, b] = c.textIn.split('+').map(s => s.trim()); if (!a || !b) return c.reply(U(c.p, 'emojimix 😅+🤔'));
     const d = await jget(`${API.TENOR}/featured?key=${key}&contentfilter=high&media_filter=png_transparent&collection=emoji_kitchen_v5&q=${enc(a + '_' + b)}`);

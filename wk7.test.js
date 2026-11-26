@@ -120,7 +120,7 @@ function mk(argStr, over = {}) {
 const _err = console.error; console.error = () => { }; // silence expected [WK7] error logs during tests
 let pass = 0, fail = 0; const failures = [];
 const ok = (cond, msg) => { if (cond) pass++; else { fail++; failures.push(msg); } };
-const names = WK7.names().filter(n => !require('./wk8').NAMES.has(n) && !require('./wk9').NAMES.has(n));
+const names = WK7.names().filter(n => !require('./wk8').NAMES.has(n) && !require('./wk9').NAMES.has(n) && !require('./wk10').NAMES.has(n));
 
 (async () => {
     // 1. coverage

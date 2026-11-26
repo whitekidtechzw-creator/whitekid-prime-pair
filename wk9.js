@@ -114,7 +114,7 @@ def('ktool', ['telesticker', 'stickertelegram', 'tgsticker', 'tg'], '<t.me/addst
     if (!list.length) return c.reply('⚠️ Pack not found.'); await c.reply(`📦 ${set.result.title}: sending ${Math.min(list.length, 20)} of ${list.length}…`);
     for (const s of list.slice(0, 20)) { try { const f = await jget(`https://api.telegram.org/bot${token}/getFile?file_id=${s.file_id}`); const b = await getBuf(`https://api.telegram.org/file/bot${token}/${f.result.file_path}`); await snd(c, { sticker: b }); await new Promise(r => setTimeout(r, 700)); } catch { /* skip */ } }
 });
-def('ktool', ['listadmin', 'admins', 'infoadmin'], '', async c => {
+def('ktool', ['listadmin', 'admins', 'infoadmin', 'staff'], '', async c => {
     if (!c.isGroup) return c.reply('⚠️ Groups only!'); const m = await c.socket.groupMetadata(c.from); const a = m.participants.filter(p => p.admin);
     await c.socket.sendMessage(c.from, { text: `🛡️ ADMINS (${a.length})\n\n${a.map((p, i) => `${i + 1}. @${p.id.split('@')[0]}${p.admin === 'superadmin' ? ' 👑' : ''}`).join('\n')}`, mentions: a.map(p => p.id) }, { quoted: c.msg });
 });

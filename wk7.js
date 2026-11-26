@@ -8,6 +8,7 @@ const core = require('./wk7-core');
 require('./wk7-text'); require('./wk7-math'); require('./wk7-info'); require('./wk7-fun'); require('./wk7-net');
 let WK8 = null; try { WK8 = require('./wk8'); } catch (e) { console.error('⚠️ wk8 pack failed to load (bot continues without it):', e.message); }
 let WK9 = null; try { WK9 = require('./wk9'); } catch (e) { console.error('⚠️ wk9 pack failed to load (bot continues without it):', e.message); }
+let WK10 = null; try { WK10 = require('./wk10'); } catch (e) { console.error('⚠️ wk10 pack failed to load (bot continues without it):', e.message); }
 const { def, category, REG, CATS, fx, U, clip } = core;
 
 category('sys', '🛠️', 'PACK TOOLS');

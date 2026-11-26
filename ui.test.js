@@ -31,6 +31,8 @@ ok(UI.findSection(secs, 'logo').cmds.includes('metallic'), 'text logos are under
 ok(UI.findSection(secs, 'group').cmds.includes('listadmin'), 'group tools are under GROUP ADMIN');
 const allCmds = secs.flatMap(x => x.cmds); ok(new Set(allCmds).size === allCmds.length, 'no command listed twice');
 for (const n of WK7.names()) ok(allCmds.includes(n), `pack command .${n} appears in the menu`);
+ok(dl.text.includes('.ᴘʟᴀʏ') && !dl.text.includes('.play'), 'menu commands are in small caps');
+ok(UI.restyle(dl.text) === dl.text, 'restyle leaves the menu unchanged');
 const one = UI.menuFull('HEADER', secs, 'FOOT'); ok(one.startsWith('HEADER') && one.endsWith('FOOT') && one.includes('DOWNLOADS'.toLowerCase().replace(/./g, c => c)) || one.includes('ᴅᴏᴡɴʟᴏᴀᴅꜱ') || true, 'one-message builder');
 ok(one.length < 60000, 'one message under the text limit: ' + one.length);
 

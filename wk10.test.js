@@ -1,0 +1,22 @@
+'use strict';
+const W = require('./wk7'), W10 = require('./wk10'), UI = require('./ui'), fs = require('fs');
+let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log(' ✗', m); } };
+const src = fs.readFileSync('commands.js', 'utf8');
+for (const n of ['infogp', 'setgdesc', 'anularlink', 'clearsession', 'insult']) ok(W.has(n), 'registered: ' + n);
+for (const n of ['8ball', 'instagram', 'trt', 'waste', 'simage', 'savest', 'ttt', 'git']) ok(src.includes(`case '${n}'`), 'alias case: ' + n);
+for (const n of ['crop', 'emix']) ok(W.has(n), 'pack alias: ' + n);
+ok(!/·\s*\d+\s*❯/.test(UI.menuSections('.', W)[0].text), 'no count in category header');
+(async () => {
+    const out = []; const sent = [];
+    const base = { socket: { user: { id: '9@s.whatsapp.net' }, sendMessage: async (j, m) => sent.push(m), groupMetadata: async () => ({ id: 'g', subject: 'T', participants: [{ id: '1@s.whatsapp.net', admin: 'admin' }, { id: '2@s.whatsapp.net' }], desc: 'd', creation: 1700000000 }), groupUpdateDescription: async () => {}, groupRevokeInvite: async () => {} }, from: 'g@g.us', msg: { message: {} }, q: '', args: [], reply: async t => out.push(t), react: async () => {}, activePrefix: '.', nowsender: '1@s.whatsapp.net', isGroup: true, isSenderGroupAdmin: false };
+    await W.run('infogp', { ...base }); ok(/Members: 2/.test(out.pop() || ''), 'infogp counts members');
+    await W.run('infogp', { ...base, isGroup: false }); ok(/Groups only/.test(out.pop() || ''), 'infogp groups only');
+    await W.run('setgdesc', { ...base }); ok(/Admins only/.test(out.pop() || ''), 'setgdesc admin-only');
+    await W.run('setgdesc', { ...base, isSenderGroupAdmin: true }); ok(/Usage/.test(out.pop() || ''), 'setgdesc usage');
+    await W.run('setgdesc', { ...base, isSenderGroupAdmin: true, q: 'hello' }); ok(/Make the bot an admin/.test(out.pop() || ''), 'bot must be admin');
+    await W.run('anularlink', { ...base }); ok(/Admins only/.test(out.pop() || ''), 'anularlink admin-only');
+    await W.run('clearsession', { ...base }); ok(/Owner-only/.test(out.pop() || ''), 'clear is owner-only');
+    await W.run('clearsession', { ...base, isOwner: true }); ok(/Cleared/.test(out.pop() || ''), 'clear works for owner');
+    await W.run('insult', { ...base }); ok(sent.pop()?.text, 'insult replies');
+    console.log(fail ? 'WK10 TESTS FAILED (' + fail + ')' : 'WK10 TESTS PASS'); process.exit(fail ? 1 : 0);
+})();

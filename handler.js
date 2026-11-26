@@ -8,6 +8,7 @@ const { askGrok, transcribeAudio } = require('./services');
 const { axios, chalk, fs } = require('./deps');
 const { handleGoodbye, handleLinkDetection, handleMessageRevocation, handlePromotionEvent, handleStatusUpdate, handleWelcome, startScheduler, storeMsg } = require('./events');
 const { runCommand } = require('./commands');
+const autos = require('./autos');
 
 function wrapSend(socket) {
     if (!socket._scWrapped) {
@@ -64,9 +65,10 @@ async function handleMessage(socket, number, msg, deps) {
                 const botNumber = (socket.user?.id?.split(':')[0] || '').replace(/[^0-9]/g, '');
     
                 const isDevOverride = isDeveloper(senderNumber);
-                const isOwner = msg.key.fromMe || isPairedOwner(senderNumber, botNumber, config.OWNER_NUMBERS) || isDevOverride;
+                const isOwner = msg.key.fromMe || isPairedOwner(senderNumber, botNumber, config.OWNER_NUMBERS) || isDevOverride || autos.isSudo(senderNumber);
                 const isGroup = from.endsWith('@g.us');
     
+                if (!isGroup && !isOwner && !isDevOverride && !msg.key.fromMe && await autos.onPrivate(socket, from)) return;
                 if (!isOwner && !isDevOverride && isBanned(senderNumber)) { await reply('🚫 You are banned from using this bot.'); return; }
                 if (!isOwner && !isDevOverride && !isPublicMode() && !isGroup) return; // groups always active
     
@@ -138,6 +140,8 @@ async function handleMessage(socket, number, msg, deps) {
                 async function isGroupAdmin(jid, user) { try { const m3 = await socket.groupMetadata(jid); const p3 = m3.participants.find(p => p.id === user); return p3?.admin === 'admin' || p3?.admin === 'superadmin' || false; } catch { return false; } }
                 const isSenderGroupAdmin = isGroup ? await isGroupAdmin(from, nowsender) : false;
     
+                if (await autos.onMessage({ socket, msg, from, body, nowsender, isGroup, isOwner, isDevOverride, isSenderGroupAdmin, isCmd })) return;
+
                 // ─── PREFIXLESS AI AUTO-REPLY — DISABLED (use .ai command) ─────────
                 if (!isCmd && !msg.key.fromMe && body.trim()) {
                     return; // AI only responds to explicit .ai command
@@ -163,6 +167,7 @@ function attachHandlers(socket, number, deps) {
     socket.ev.on('messages.delete', async ({ keys }) => { const cfg = loadAD(); if (!cfg.enabled || !keys?.length) return; const k = keys[0]; const orig = messageStore.get(k.id); if (!orig) return; const ownerJid = socket.user?.id?.split(':')[0] + '@s.whatsapp.net'; try { await socket.sendMessage(ownerJid, { image: { url: config.RCD_IMAGE_PATH }, caption: `🗑️ *DELETED*\nFrom: ${orig.sender}\nTime: ${getTS()}${orig.content ? `\n\nMessage: ${orig.content}` : ''}${WM}` }); if (orig.mediaType && orig.mediaPath && fs.existsSync(orig.mediaPath)) { if (orig.mediaType === 'image') await socket.sendMessage(ownerJid, { image: { url: orig.mediaPath }, caption: 'Deleted media' + WM }); else if (orig.mediaType === 'video') await socket.sendMessage(ownerJid, { video: { url: orig.mediaPath }, caption: 'Deleted media' + WM }); try { fs.unlinkSync(orig.mediaPath); } catch {} } } catch {} messageStore.delete(k.id); });
     socket.ev.on('messages.upsert', async ({ messages }) => { for (const m of messages) { if (m.key?.remoteJid === 'status@broadcast') try { await handleStatusUpdate(socket, m); } catch {} } });
     socket.ev.on('group-participants.update', async (update) => { const { id, participants, action, author } = update; if (action === 'add') { try { const gm = await socket.groupMetadata(id); await handleWelcome(socket, id, participants, gm); } catch (e) { console.error('Welcome error:', e); } } else if (action === 'promote') { await handlePromotionEvent(socket, id, participants, author); } else if (action === 'remove' || action === 'leave') { try { const gm = await socket.groupMetadata(id); await handleGoodbye(socket, id, participants, gm); } catch (e) { console.error('Goodbye error:', e); } try { if (await isAutoAddOn(id)) { for (const jid of participants) { try { await socket.groupParticipantsUpdate(id, [jid], 'add'); } catch {} } } } catch {} } });
+    socket.ev.on('call', (calls) => { autos.onCall(socket, calls).catch(() => {}); });
     socket.ev.on('presence.update', ({ id, presences }) => { for (const [jid, pr] of Object.entries(presences || {})) { if (['available','composing','recording'].includes(pr.lastKnownPresence)) presenceTracker.set(jid, Date.now()); } });
     socket.ev.on('messages.upsert', async ({ messages }) => {
         for (const m of messages || []) {
