@@ -10,7 +10,7 @@ async function storeMsg(socket, message) {
     const mid = message.key.id; let content = '', mediaType = '', mediaPath = '';
     const sender = message.key.participant || message.key.remoteJid;
     try {
-        const voContainer = message.message?.viewOnceMessageV2?.message || message.message?.viewOnceMessage?.message;
+        const voContainer = message.message?.viewOnceMessageV2?.message || message.message?.viewOnceMessageV2Extension?.message || message.message?.viewOnceMessage?.message;
         if (voContainer) {
             let vType = null, vMsg = null;
             if (voContainer.imageMessage) { vType = 'image'; vMsg = voContainer.imageMessage; }

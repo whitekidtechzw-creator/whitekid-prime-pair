@@ -6,7 +6,7 @@
 
 **A multi-device WhatsApp bot with 950+ commands, a web pairing page and an optional Telegram pairing bot.**
 
-`v9.3.1` · Node.js 18–24 · Baileys multi-device · by **WhiteKid Tech**
+`v9.5.0` · Node.js 18–24 · Baileys multi-device · by **WhiteKid Tech**
 
 </div>
 
@@ -43,7 +43,7 @@
 | 🎮 **Games and fun** | Tic-tac-toe, trivia, hangman, blackjack, quizzes, truth or dare, text fun, jokes, memes, reactions. |
 | ⚽ **Sports and search** | Live scores, standings, weather, wiki, news, crypto, movies, Bible, Quran, stalk tools. |
 | 🌐 **Web pairing** | A page where anyone can link their number with a pairing code, validated and rate-limited. |
-| ♻️ **Reliable** | One connection path, reconnect with backoff, sessions kept on disk, bounded caches, 9 test suites that need no network. |
+| ♻️ **Reliable** | One connection path, reconnect with backoff, sessions kept on disk, bounded caches, 10 test suites that need no network. |
 
 ---
 
@@ -104,6 +104,7 @@ Commands start with the prefix (`.` by default).
 | `.repo` | Source and pairing repo links. |
 | `.alive` · `.ping` | Check that the bot is running. |
 | `.pair +number` | Get a pairing code for another number. |
+| `.vv` | Reply to a view-once photo, video or voice note to reveal it (`.vv2` sends it to your own chat; owner only). |
 
 The bot starts in **private** mode (only the owner can use it in private chats; groups always work). Owners switch with `.mode public` or `.mode private`.
 
@@ -166,6 +167,10 @@ The bot is one Node process with an HTTP server, so any Node host works.
 3. Attach a **persistent disk** and set `DATA_DIR` to its path.
 4. On Render the bot pings itself every 10 minutes to stay awake. Other hosts: set `RENDER_KEEP_ALIVE_URL` or point an uptime monitor at `/ping`.
 
+**Auto-update from GitHub (no re-pairing)**
+Set `UPDATE_REPO=owner/repo` (and `UPDATE_BRANCH`, `GITHUB_TOKEN` for a private repo). Every few minutes the bot checks GitHub, downloads changed files, syntax-checks them, keeps `data/`, `.env` and all sessions, installs new packages if `package.json` changed, then restarts itself in a few seconds. Linked numbers reconnect from disk. A bad push is rejected, and a version that crashes right after an update is rolled back automatically. Owners can run `.update`, `.update force` or `.update status`.
+For this to work, **turn off your host's "auto-deploy on push"** (a redeploy replaces the whole disk, which is what logs everyone out), or keep `DATA_DIR` on a persistent disk.
+
 **VPS with pm2**
 ```bash
 npm install
@@ -216,7 +221,7 @@ Flat on purpose, no sub-folders.
 ## Tests and health checks
 
 ```bash
-npm test          # guard, page, wk7, wk8, wk9, wk10, autos, ui, smoke
+npm test          # guard, page, wk7, wk8, wk9, wk10, autos, viewonce, ui, smoke
 npm run check     # syntax check of the main files
 npm run apicheck  # probe the external APIs (or use .apicheck in WhatsApp)
 ```
@@ -257,6 +262,8 @@ Built by **WhiteKid Tech** (Zimbabwe). Some commands were ported or rebuilt from
 
 ## Changelog
 
+- **9.5.0** Auto-update: the bot pulls new code from GitHub by itself (`UPDATE_REPO`), keeps every session and restarts without anyone pairing again. New `.update` owner command, supervisor with crash restart and automatic rollback of a bad update.
+- **9.4.0** View-once rewrite (`.vv`/`.rvo`/`.viewonce` now handle every WhatsApp wrapper, photos, videos and voice notes, with a cache for stripped quotes; new `.vv2` sends to your own chat). Sudo fixes: only the real owner can add or remove sudo users, `@mention`/reply/number all work, and owner/sudo checks also match the phone number WhatsApp gives in LID groups.
 - **9.3.1** Command names in the menu use the small-caps font.
 - **9.3** Automations: anti-badword, anti-tag, anti-call, PM blocker, auto-react, auto-typing, chatbot, sudo, top members.
 - **9.2** Knight/Atlas extras (`infogp`, `setgdesc`, `anularlink`, `clearsession`, `insult`) and many aliases; menu headers lose the counts.

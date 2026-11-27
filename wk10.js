@@ -111,18 +111,40 @@ def('botx', ['chatbot'], 'on | off', async c => {
     if (v === null) return c.reply(`🤖 Chatbot here: ${state(autos.get().chatbot[c.from])}\n${c.isGroup ? 'In groups it answers when someone replies to it or @mentions it.' : 'It answers every message in this chat.'}\n\nUsage: ${c.activePrefix}chatbot on | off`);
     autos.setChatbot(c.from, v); await c.reply(`🤖 Chatbot is now ${state(v)} in this chat.`);
 });
-def('botx', ['sudo', 'addmod', 'setmod', 'delmod', 'removemod', 'delsudo'], 'add | del | list  (@user or number)', async c => {
-    if (needOwner(c)) return;
-    const ctx = c.msg?.message?.extendedTextMessage?.contextInfo || {};
-    const target = (ctx.mentionedJid && ctx.mentionedJid[0]) || ctx.participant || '';
-    const num = String(target).split('@')[0] || (c.args[1] || '').replace(/\D/g, '');
+def('botx', ['sudo', 'addmod', 'setmod', 'delmod', 'removemod', 'delsudo'], 'add | del | list  (@user, reply or number)', async c => {
+    const cfg = require('./config').config;
+    const me = String((c.socket.user && c.socket.user.id) || '').split(':')[0].split('@')[0];
+    const owners = [...(cfg.OWNER_NUMBERS || []), me].map(n => String(n).replace(/\D/g, ''));
+    const sender = String(c.nowsender || '').split('@')[0].replace(/\D/g, '');
+    const realOwner = !!(c.isDevOverride || (c.msg && c.msg.key && c.msg.key.fromMe) || owners.includes(sender));
     const alias = c.command || '';
     let sub = (c.args[0] || '').toLowerCase();
     if (/^(addmod|setmod)$/.test(alias)) sub = 'add'; else if (/^(delmod|removemod|delsudo)$/.test(alias)) sub = 'del';
-    const numOnly = /^(add|del|remove)$/.test(sub) && !target ? (c.args[1] || c.args[0] || '').replace(/\D/g, '') : num;
-    if (sub === 'add') { if (!autos.addSudo(numOnly)) return c.reply(`Usage: ${c.activePrefix}sudo add @user  (or reply, or a number with country code)`); return c.reply(`✅ ${numOnly} is now a sudo user (can use owner commands).`); }
-    if (sub === 'del' || sub === 'remove') { return c.reply(autos.delSudo(numOnly) ? `✅ ${numOnly} removed from sudo.` : `⚠️ ${numOnly || 'That number'} was not a sudo user.`); }
-    const list = autos.get().sudo; await c.reply(`👑 SUDO USERS (${list.length})\n\n${list.map((n, i) => `${i + 1}. +${n}`).join('\n') || 'none yet'}\n\nUsage: ${c.activePrefix}sudo add @user | del @user | list`);
+    if (sub === 'remove') sub = 'del';
+    if (sub !== 'add' && sub !== 'del') {   // list: any owner or sudo user may look
+        if (!c.isOwner && !c.isDevOverride) return c.reply('🔐 Owner-only command.');
+        const list = autos.get().sudo;
+        return c.reply(`👑 SUDO USERS (${list.length})\n\n${list.map((n, i) => `${i + 1}. +${n}`).join('\n') || 'none yet'}\n\nUsage: ${c.activePrefix}sudo add @user | del @user | list`);
+    }
+    if (!realOwner) return c.reply('🔐 Only the real owner can add or remove sudo users.');
+    const ctx = (c.msg && c.msg.message && c.msg.message.extendedTextMessage && c.msg.message.extendedTextMessage.contextInfo) || {};
+    const jid = (ctx.mentionedJid && ctx.mentionedJid[0]) || ctx.participant || '';
+    const typed = (c.args.slice(alias && /^(sudo)$/.test(alias) ? 1 : 0).join('').replace(/\D/g, ''));
+    const num = String(jid).split('@')[0].replace(/\D/g, '') || typed;
+    if (!num) return c.reply(`Usage: ${c.activePrefix}${alias === 'sudo' ? 'sudo ' + sub : alias} @user  (or reply to them, or give a number with country code)`);
+    if (sub === 'add') {
+        if (owners.includes(num)) return c.reply('ℹ️ That number is already an owner.');
+        if (!autos.addSudo(num)) return c.reply('⚠️ That does not look like a valid number.');
+        return c.reply(`✅ +${num} is now a sudo user (can use owner commands).`);
+    }
+    return c.reply(autos.delSudo(num) ? `✅ +${num} removed from sudo.` : `⚠️ +${num} was not a sudo user.`);
+});
+// view-once → owner DM (Knightbot .vv2): reveal quietly without posting in the chat
+def('botx', ['vv2', 'vvdm', 'vvowner'], '(reply to a view-once; owner only)', async c => {
+    if (!c.isOwner && !c.isDevOverride) return c.reply('🔐 Owner-only command.');
+    const me = String((c.socket.user && c.socket.user.id) || '').split(':')[0].split('@')[0];
+    const ok = await require('./services').viewonceCommand(c.socket, c.from, c.msg, c.fakeCard, me + '@s.whatsapp.net');
+    if (ok) await c.reply('✅ Sent to your own chat.');
 });
 def('botx', ['owners', 'modlist', 'mods'], '', async c => {
     const owners = (require('./config').config.OWNER_NUMBERS || []).map(String), sudo = autos.get().sudo;
@@ -136,5 +158,5 @@ def('grp', ['topmembers', 'topchatters', 'leaderboard'], '', async c => {
     await c.socket.sendMessage(c.from, { text: `📊 TOP MEMBERS\n\n${rows.map(([n, k], i) => `${medals[i] || (i + 1) + '.'} @${n} — ${k} messages`).join('\n')}`, mentions: rows.map(([n]) => n + '@s.whatsapp.net') }, { quoted: c.msg });
 });
 
-const NAMES = new Set(); for (const n of ['infogp', 'infogrupo', 'groupinfo', 'setgdesc', 'setdesc', 'anularlink', 'resetlink', 'revokelink', 'clearsession', 'clearsesi', 'cleartmp', 'clear', 'insult', 'roastme', 'anticall', 'pmblocker', 'autoreact', 'areact', 'autoreaction', 'autotyping', 'antitag', 'antibadword', 'antibad', 'chatbot', 'sudo', 'addmod', 'setmod', 'delmod', 'removemod', 'delsudo', 'owners', 'modlist', 'mods', 'topmembers', 'topchatters', 'leaderboard']) if (REG.has(n)) NAMES.add(n);
+const NAMES = new Set(); for (const n of ['infogp', 'infogrupo', 'groupinfo', 'setgdesc', 'setdesc', 'anularlink', 'resetlink', 'revokelink', 'clearsession', 'clearsesi', 'cleartmp', 'clear', 'insult', 'roastme', 'anticall', 'pmblocker', 'autoreact', 'areact', 'autoreaction', 'autotyping', 'antitag', 'antibadword', 'antibad', 'chatbot', 'sudo', 'addmod', 'setmod', 'delmod', 'removemod', 'delsudo', 'vv2', 'vvdm', 'vvowner', 'owners', 'modlist', 'mods', 'topmembers', 'topchatters', 'leaderboard']) if (REG.has(n)) NAMES.add(n);
 module.exports = { NAMES };

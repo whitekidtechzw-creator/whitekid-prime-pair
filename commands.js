@@ -182,6 +182,19 @@ case 'voiceon': { if (!isOwner && !isDevOverride) return reply('⚠️ Owner onl
 case 'voiceoff': { if (!isOwner && !isDevOverride) return reply('⚠️ Owner only!'); setVoiceEnabled(false); await reply('🔇 *Voice Reply OFF*'); break; }
 case 'autoread': { if (!isOwner && !isDevOverride) return reply('⚠️ Owner only!'); const s = args[0]?.toLowerCase(); if (s === 'on') { setAutoRead(true); await reply('👁️ *AutoRead ON*'); } else if (s === 'off') { setAutoRead(false); await reply('👁️ *AutoRead OFF*'); } else await reply(`👁️ AutoRead: ${isAutoRead() ? 'ON' : 'OFF'}\nUsage: ${activePrefix}autoread on/off`); break; }
 case 'autorecord': { if (!isOwner && !isDevOverride) return reply('⚠️ Owner only!'); const s = args[0]?.toLowerCase(); if (s === 'on') { setAutoRecord(true); await reply('🎥 *AutoRecord ON*'); } else if (s === 'off') { setAutoRecord(false); await reply('🎥 *AutoRecord OFF*'); } else await reply(`🎥 AutoRecord: ${isAutoRecord() ? 'ON' : 'OFF'}\nUsage: ${activePrefix}autorecord on/off`); break; }
+case 'update': case 'upgrade': {
+    if (!isOwner && !isDevOverride) return reply('⚠️ Owner only!');
+    const upd = require('./updater'), sub = args[0]?.toLowerCase(), st = upd.status();
+    if (!st.enabled) return reply('⚠️ Auto-update is off.\n\nSet UPDATE_REPO=owner/repo (and UPDATE_BRANCH if it is not main) in your host variables, then restart once.');
+    if (sub === 'status') return reply(`🔄 *Auto-update*\n\n📦 Repo: ${st.repo}@${st.branch}\n⏱️ Checks every ${st.intervalMin} min\n🔖 Version: ${st.sha ? st.sha.slice(0, 7) : 'unknown'}\n🕒 Last check: ${st.checkedAt ? new Date(st.checkedAt).toISOString().replace('T', ' ').slice(0, 19) + ' UTC' : 'never'}`);
+    await react('🔄'); await reply('🔎 Checking GitHub for a new version...');
+    const r = await upd.run({ force: sub === 'force' });
+    if (r.status === 'updated') await reply(`✅ *Updated* to ${r.sha.slice(0, 7)} (${r.files} file${r.files === 1 ? '' : 's'}).\n\n♻️ Restarting in a few seconds. Linked numbers reconnect by themselves, nobody needs to pair again.`);
+    else if (r.status === 'current') await reply('✅ Already on the latest version (' + (r.sha || '').slice(0, 7) + ').');
+    else if (r.status === 'busy') await reply('⏳ An update is already running.');
+    else await reply('⚠️ Update not applied: ' + (r.error || r.status));
+    break;
+}
 case 'autostatus': case 'autoview': {
     if (!isOwner && !isDevOverride) return reply('⚠️ Owner only!');
     const cfg = getAutoStatus(), s = args[0]?.toLowerCase();
@@ -830,7 +843,7 @@ case 'uploadugu': case 'uguu': {
 // ─── VIEW ONCE ────────────────────────────────────────────────────────────────
 case 'vv': case 'rvo': case 'viewonce': {
     await react('✨');
-    await viewonceCommand(socket, from, msg, fakeCard);
+    try { await viewonceCommand(socket, from, msg, fakeCard); } catch (e) { reply(`⚠️ View-once failed: ${e.message}`); }
     break;
 }
 

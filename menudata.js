@@ -36,6 +36,7 @@ module.exports = [
    "uptime",
    "pair",
    "settings",
+   "update",
    "prefix",
    "report",
    "active",

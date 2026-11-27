@@ -11,7 +11,7 @@ let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log(' ✗', m); }
     // permissions
     await cmd('anticall', ['on']); ok(/Owner-only/.test(out.pop()), 'anticall needs owner');
     await cmd('antibadword', ['on']); ok(/Admins only/.test(out.pop()), 'antibadword needs admin');
-    await cmd('sudo', ['add', '263789000111']); ok(/Owner-only/.test(out.pop()), 'sudo needs owner');
+    await cmd('sudo', ['add', '263789000111']); ok(/real owner|Owner-only/.test(out.pop()), 'sudo needs owner');
 
     // flags
     await cmd('anticall', ['on'], { isOwner: true }); ok(A.get().flags.anticall === true, 'anticall on');
@@ -44,9 +44,16 @@ let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log(' ✗', m); }
     ok(await A.onMessage({ ...base, isCmd: true, body: '.menu' }) === false, 'commands are never hijacked by the chatbot');
 
     // sudo
-    await cmd('sudo', ['add', '263789000111'], { isOwner: true }); ok(A.isSudo('+263 789 000 111'), 'sudo added');
+    await cmd('sudo', ['add', '263789000111'], { isOwner: true }); ok(/Only the real owner/.test(out.pop()) && !A.isSudo('263789000111'), 'a sudo/owner-level user (not the real owner) cannot add sudo');
+    await cmd('sudo', ['add', '263789000111'], { isOwner: true, isDevOverride: true }); ok(A.isSudo('+263 789 000 111'), 'sudo added');
+    await cmd('sudo', ['add', '263789000111'], { isOwner: true, isDevOverride: true }); out.pop();
+    await cmd('addmod', ['263789000222'], { isOwner: true, isDevOverride: true }); ok(A.isSudo('263789000222'), 'addmod adds');
+    await cmd('sudo', ['add', 'abc'], { isOwner: true, isDevOverride: true }); ok(/Usage/.test(out.pop()), 'sudo add needs a number');
+    const sudoMsg = { key: { id: 'x' }, message: { extendedTextMessage: { contextInfo: { mentionedJid: ['263789000333@s.whatsapp.net'] } } } };
+    await cmd('sudo', ['add', '@263789000333'], { isOwner: true, isDevOverride: true, msg: sudoMsg }); ok(A.isSudo('263789000333'), 'sudo add by @mention');
+    await cmd('sudo', ['del'], { isOwner: true, isDevOverride: true, msg: sudoMsg }); ok(!A.isSudo('263789000333'), 'sudo del by @mention');
     await cmd('sudo', ['list'], { isOwner: true }); ok(/263789000111/.test(out.pop()), 'sudo list');
-    await cmd('delmod', ['263789000111'], { isOwner: true }); ok(!A.isSudo('263789000111'), 'delmod removes sudo');
+    await cmd('delmod', ['263789000111'], { isOwner: true, isDevOverride: true }); ok(!A.isSudo('263789000111'), 'delmod removes sudo');
 
     // topmembers
     A._reset(); for (let i = 0; i < 3; i++) await A.onMessage({ ...base, nowsender: '5@s.whatsapp.net' }); await A.onMessage({ ...base, nowsender: '6@s.whatsapp.net' });

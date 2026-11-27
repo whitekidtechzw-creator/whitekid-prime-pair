@@ -642,25 +642,49 @@ async function uploadSmartMedia(buffer, mimeType) {
     return null;
 }
 
-async function viewonceCommand(sock, chatId, message, fakeCard) {
-    const quoted = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-    const quotedImage = quoted?.imageMessage;
-    const quotedVideo = quoted?.videoMessage;
-    const voMsg2 = message.message?.viewOnceMessageV2?.message;
-    const voMsg = message.message?.viewOnceMessage?.message;
-    const imgMsg = quotedImage?.viewOnce ? quotedImage : (voMsg2?.imageMessage || voMsg?.imageMessage);
-    const vidMsg = quotedVideo?.viewOnce ? quotedVideo : (voMsg2?.videoMessage || voMsg?.videoMessage);
-    if (imgMsg) {
-        const stream = await downloadContentFromMessage(imgMsg, 'image');
-        let buffer = Buffer.from([]); for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
-        await sock.sendMessage(chatId, { image: buffer, caption: imgMsg.caption || '✨ Revealed image' }, { quoted: fakeCard });
-    } else if (vidMsg) {
-        const stream = await downloadContentFromMessage(vidMsg, 'video');
-        let buffer = Buffer.from([]); for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
-        await sock.sendMessage(chatId, { video: buffer, caption: vidMsg.caption || '✨ Revealed video' }, { quoted: fakeCard });
-    } else {
-        await sock.sendMessage(chatId, { text: '⚠️ Please reply to a view-once image or video.' }, { quoted: message });
+// ───── VIEW ONCE ─────
+// WhatsApp wraps view-once media in several ways (viewOnceMessage, V2, V2Extension, ephemeral wrappers, or a plain
+// media message with viewOnce:true), and quoted copies often lose the wrapper. We search all of them, support voice
+// notes, and keep the media info of recent view-once messages so a reply still works when the quote is stripped.
+const VO_CACHE = new Map();
+const VO_KINDS = ['image', 'video', 'audio'];
+const voApi = {
+    download: async (obj, kind) => { const st = await downloadContentFromMessage(obj, kind); const parts = []; for await (const ch of st) parts.push(ch); return Buffer.concat(parts); }
+};
+function findViewOnce(m, wrapped = false, depth = 0) {
+    if (!m || typeof m !== 'object' || depth > 6) return null;
+    const isWrap = wrapped || !!(m.viewOnceMessage || m.viewOnceMessageV2 || m.viewOnceMessageV2Extension);
+    for (const k of VO_KINDS) { const o = m[k + 'Message']; if (o && (isWrap || o.viewOnce)) return { kind: k, obj: o }; }
+    for (const w of ['viewOnceMessage', 'viewOnceMessageV2', 'viewOnceMessageV2Extension', 'ephemeralMessage', 'documentWithCaptionMessage']) {
+        if (m[w] && m[w].message) { const r = findViewOnce(m[w].message, isWrap, depth + 1); if (r) return r; }
     }
+    return null;
+}
+function rememberViewOnce(message) {
+    const id = message && message.key && message.key.id; if (!id) return;
+    const f = findViewOnce(message.message); if (!f) return;
+    VO_CACHE.set(id, f); while (VO_CACHE.size > 200) VO_CACHE.delete(VO_CACHE.keys().next().value);
+}
+/** Reveals the view-once media the command replies to. toJid = where to send it (default: the same chat). Returns true when something was sent. */
+async function viewonceCommand(sock, chatId, message, fakeCard, toJid) {
+    const m = message.message || {};
+    const ctx = (m.extendedTextMessage || m.imageMessage || m.videoMessage || m.audioMessage || m.conversation && {} || {}).contextInfo || {};
+    const candidates = [findViewOnce(ctx.quotedMessage), ctx.stanzaId && VO_CACHE.get(ctx.stanzaId), findViewOnce(m)].filter(Boolean);
+    if (!candidates.length) { await sock.sendMessage(chatId, { text: '⚠️ Reply to a view-once photo, video or voice note with this command.' }, { quoted: message }); return false; }
+    let lastErr = null;
+    for (const { kind, obj } of candidates) {
+        try {
+            const buffer = await voApi.download(obj, kind);
+            if (!buffer || !buffer.length) throw new Error('empty media');
+            const dest = toJid || chatId, opts = { quoted: fakeCard || message };
+            if (kind === 'image') await sock.sendMessage(dest, { image: buffer, caption: obj.caption || '✨ Revealed image' }, opts);
+            else if (kind === 'video') await sock.sendMessage(dest, { video: buffer, caption: obj.caption || '✨ Revealed video', mimetype: obj.mimetype || 'video/mp4' }, opts);
+            else await sock.sendMessage(dest, { audio: buffer, mimetype: obj.mimetype || 'audio/ogg; codecs=opus', ptt: !!obj.ptt }, opts);
+            return true;
+        } catch (e) { lastErr = e; }
+    }
+    await sock.sendMessage(chatId, { text: `⚠️ Could not open that view-once (${(lastErr && lastErr.message) || 'unknown error'}). It was probably already opened on the phone or has expired — reply to it before it is opened.` }, { quoted: message });
+    return false;
 }
 
 function collectApiTargets() {
@@ -680,4 +704,4 @@ function collectApiTargets() {
     return out;
 }
 
-module.exports = { audioCandidates, extractAudioUrl, LEAGUE_IDS, PAXSENIX, TelegraPh, UploadFileUgu, aioDownload, askGrok, collectApiTargets, downloadMovieFile, espnScoreboard, formatAudio, fromBuffer, generateImage, getCurrentDateTime, getLyrics, getUserLocation, isValidBuffer, localYtAudio, localYtVideo, mediafireDl, ossBuffer, paxMemes, paxQuotes, paxShazam, paxTempMailBody, paxTempMailCreate, paxTempMailInbox, paxVideoJob, queryAudioEndpoints, searchMovies, sendVoiceReply, showSubtitleOptions, sportsdbSearch, transcribeAudio, uploadAudioToCatbox, uploadSmartMedia, uploadToCatbox, uploadToTelegraph, viewonceCommand, webp2mp4File, ytDownloadMp4, ytGetInfo };
+module.exports = { findViewOnce, rememberViewOnce, voApi, audioCandidates, extractAudioUrl, LEAGUE_IDS, PAXSENIX, TelegraPh, UploadFileUgu, aioDownload, askGrok, collectApiTargets, downloadMovieFile, espnScoreboard, formatAudio, fromBuffer, generateImage, getCurrentDateTime, getLyrics, getUserLocation, isValidBuffer, localYtAudio, localYtVideo, mediafireDl, ossBuffer, paxMemes, paxQuotes, paxShazam, paxTempMailBody, paxTempMailCreate, paxTempMailInbox, paxVideoJob, queryAudioEndpoints, searchMovies, sendVoiceReply, showSubtitleOptions, sportsdbSearch, transcribeAudio, uploadAudioToCatbox, uploadSmartMedia, uploadToCatbox, uploadToTelegraph, viewonceCommand, webp2mp4File, ytDownloadMp4, ytGetInfo };
