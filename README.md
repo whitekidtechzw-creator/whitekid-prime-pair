@@ -6,7 +6,7 @@
 
 **A multi-device WhatsApp bot with 950+ commands, a web pairing page and an optional Telegram pairing bot.**
 
-`v9.6.1` · Node.js 18–24 · Baileys multi-device · by **WhiteKid Tech**
+`v9.7.1` · Node.js 18–24 · Baileys multi-device · by **WhiteKid Tech**
 
 </div>
 
@@ -18,16 +18,18 @@
 3. [Configuration](#configuration)
 4. [Using the bot](#using-the-bot)
 5. [The menu](#the-menu)
-6. [Group tools and automations](#group-tools-and-automations)
-7. [Owner and sudo](#owner-and-sudo)
-8. [Deploying](#deploying)
-9. [Web pairing page and HTTP routes](#web-pairing-page-and-http-routes)
-10. [Project layout](#project-layout)
-11. [Tests and health checks](#tests-and-health-checks)
-12. [Troubleshooting](#troubleshooting)
-13. [Safety notes](#safety-notes)
-14. [Credits and licence](#credits-and-licence)
-15. [Changelog](#changelog)
+6. [Status, view-once and AI video](#status-view-once-and-ai-video-new-in-970)
+7. [Make it yours](#make-it-yours-menu-and-custom-commands-new-in-971)
+8. [Group tools and automations](#group-tools-and-automations)
+9. [Owner and sudo](#owner-and-sudo)
+10. [Deploying](#deploying)
+11. [Web pairing page and HTTP routes](#web-pairing-page-and-http-routes)
+12. [Project layout](#project-layout)
+13. [Tests and health checks](#tests-and-health-checks)
+14. [Troubleshooting](#troubleshooting)
+15. [Safety notes](#safety-notes)
+16. [Credits and licence](#credits-and-licence)
+17. [Changelog](#changelog)
 
 ---
 
@@ -131,6 +133,45 @@ The bot starts in **private** mode (only the owner can use it in private chats; 
 
 ---
 
+## Status, view-once and AI video (new in 9.7.0)
+
+| Command | Who | What it does |
+|---|---|---|
+| `.vv` / `.rvo` / `.vvx` | anyone | Reply to a view-once photo, video, video note or voice note to reveal it. If WhatsApp stripped the quote, the bot falls back to that sender's newest saved view-once. |
+| `.antiviewonce on\|off` | owner | Copies **every** view-once the bot sees to your own chat the moment it arrives, so it cannot expire before you open it. |
+| `.savestatus` | owner | Reply to a status to save it. |
+| `.autosavestatus on\|off` | owner | Copies every status your contacts post (text, photo, video, voice) to your own chat. |
+| `.antigroupstatus on\|off\|kick` | group admins | Deletes "group status" posts from non-admins (`kick` also removes the sender). The bot must be an admin. |
+| `.antistatusmention on\|off\|kick` | group admins | Deletes the notice WhatsApp posts when someone mentions the group in a status. |
+| `.afk [reason]` / `.unafk` | anyone | The bot tells people who tag or reply to you that you are away, and welcomes you back. |
+| `.veo` `.sora` `.txt2vid` `.txt2video` `.aivid` `.aivideo` `<prompt>` | anyone | One AI-video chain: Paxsenix Veo 3.1 → Veo 2 → Runway → Okatsu → Nexray. If every video service is busy you still get a cinematic AI image instead of an error. |
+
+Also new: `.bratvid` `.iqc` `.carbon` `.tofigure` `.capcut` `.bard` `.quillbot`, `.tagadmins` `.listonline` `.addbadword` `.removebadword` `.badwordlist`, `.alldl` `.tikdl` `.twtdl`, `.neko` `.kitsune` `.husbando` plus about 20 more reaction gifs, `.catfact`, and one menu command per section (`.downloadmenu`, `.groupmenu`, `.ownermenu`, `.aimenu`, `.gamesmenu`, `.toolsmenu`, `.funmenu`, `.animemenu`, `.searchmenu`, `.imagemenu`, `.sportsmenu`, `.logomenu`).
+
+Notes
+- Anti-status, anti-view-once and the status saver all need the bot number to stay online. They only see what reaches that number.
+- Media is cached in memory only (about 80 MB, 24 hours), never written to disk.
+- Run `.apicheck` after deploying: the new third-party endpoints (Bard, QuillBot, iQC, ToFigure, CapCut, Nexray) come from other open-source bots and can change without notice.
+
+---
+
+## Make it yours: menu and custom commands (new in 9.7.1)
+
+The bot is built so you can change the important things from two small files, without touching the big ones. See [`EDITING.md`](EDITING.md) for the full map.
+
+**`menu.config.js`** controls the whole menu: the stats card rows, the footer, the drawing style of each section, section order, names and icons, hiding or moving commands, and your own sections. Save the file and send `.menu` again; no restart. A typo never breaks the bot (it keeps the last good settings and prints the problem).
+
+```js
+renameSections: { 'GENERAL': 'MAIN MENU' },
+sectionOrder:   ['DOWNLOADS', 'AI CHAT', 'GAMES'],
+hideCommands:   ['hack'],
+addSections:    [{ name: 'MY FAVOURITES', icon: '⭐', commands: ['play', 'sticker', 'vv'] }],
+```
+
+**`custom.js`** is where you add your own commands: a block with a `name` and a `reply` (or a small `run` function). They appear in the menu automatically. Restart after adding one.
+
+---
+
 ## Group tools and automations
 
 Settings are saved in `data/autos.json`. The bot must be a **group admin** for anything that deletes messages or edits the group. Admins and owners are never affected by the filters.
@@ -207,11 +248,13 @@ Flat on purpose, no sub-folders.
 | `handler.js` | Turns WhatsApp events into command calls and runs the automation hooks. |
 | `commands.js` | Core commands (one big `switch`). |
 | `games.js` | Games and fun pack. |
-| `wk7*.js`, `wk8.js`, `wk9.js`, `wk10.js` | Command packs: v7 toolkit, v8 downloaders/converters/groups, v9 Knightbot pack, v10 Knight/Atlas extras. |
+| `wk7*.js`, `wk8.js` … `wk12.js` | Command packs: v7 toolkit, v8 downloaders/converters/groups, v9 Knightbot pack, v10 Knight/Atlas extras. |
 | `autos.js` | Anti-badword, anti-tag, anti-call, PM blocker, auto-react, auto-typing, chatbot, sudo, top members. |
 | `ai.js`, `music.js`, `services.js` | AI engine with provider fallback, `.play` engine, API hub. |
 | `events.js` | Antidelete, welcome/goodbye, antilink, scheduler, tic-tac-toe. |
-| `ui.js`, `menudata.js` | Bot font, reply card, menu layout. |
+| `menu.config.js`, `custom.js`, `EDITING.md` | **Yours to edit**: menu settings, your own commands, and the guide to both. |
+| `menucfg.js`, `customcmds.js` | Load the two files above (no need to edit). |
+| `ui.js`, `menudata.js` | Bot font, reply card, menu builder; the core command list per section. |
 | `helpers.js`, `store.js`, `config.js` | Text styling and buttons, settings on disk, configuration. |
 | `deps.js`, `wa.js` | Library loading (missing optional libraries never crash the bot). |
 | `telegram.js` | Optional Telegram pairing bot (off unless `TG_TOKEN` is set). |
@@ -263,6 +306,8 @@ Built by **WhiteKid Tech** (Zimbabwe). Some commands were ported or rebuilt from
 
 ## Changelog
 
+- **9.7.1** Easy editing. `menu.config.js` (live-reloading menu settings: header rows, footer, section look, order, rename, hide, move, your own sections), `custom.js` (add commands with a text reply or a small function), `EDITING.md` (where everything lives). The default menu is unchanged, character for character. New tests: `menucfg.test.js`.
+- **9.7.0** New `wk12.js` pack plus hooks. **Status:** `.autosavestatus`, `.antigroupstatus`, `.antistatusmention`, `.afk`. **View-once:** `.antiviewonce` (save every view-once to your DM), video-note support, sender fallback for stripped quotes, `.vvx`. **AI video:** `.veo`, `.sora`, `.txt2vid`, `.txt2video`, `.aivid`, `.aivideo` share one source chain with an AI-image fallback. **New commands:** `.bratvid`, `.iqc`, `.carbon`, `.tofigure`, `.capcut`, `.bard`, `.quillbot`, `.tagadmins`, `.listonline`, bad-word list management, `.alldl`, `.tikdl`, `.twtdl`, anime pictures and reaction gifs, `.catfact`, per-section menu commands. Ideas and endpoints from Toxic-MD and XLICON-V2-MD. Test fixes: `autobio` coverage and the unknown-command check.
 - **9.6.1** Sudo fix: users WhatsApp identifies by a LID in groups or chats are recognised, and `.sudo add/del @user` stores and removes both the phone number and the LID.
 - **9.6.0** Flash-MD pack (`wk11.js`, 60+ commands): WhatsApp tools (`block`, `unblock`, `blocklist`, `privacy`, `lastseen`, `mydp`, `mystatus`, `myonline`, `removedp`, `fullpp`, `onwa`, `bizprofile`, `vcard`, `details`, `mygroups`, `star`, `archive`, `save`), groups (`rename`, `req`, `approve`, `reject`, `disap1/7/90/-off`, `create`, `poll`), `hack`, `jokes`, `inspire`, `quotes`, `host`, `language`, Instagram `posts` and `story`, `video-dl`, `image-dl`, `playlist`, `trim`, and 19 more text logos (`dragonball`, `naruto`, `sunset`, `gold`, `frozen`...). New APIs: noobs-api, bk9, popcat, favqs, mollygram. Flash-MD's `eval`/`exec` and its embedded third-party API keys were not copied.
 - **9.5.0** Fixes: `.vv` now saves view-once media the moment it arrives, so it still works after the receiver opened it; `.savestatus` (`.savest`, `.sv`) rewritten (photo, video, voice note, sticker, status text; add `dm` to send it to yourself); reply-based `promote`, `demote`, `warn` and `kick` work again (the bot never filled in the replied-to message). Auto-update: the bot pulls new code from GitHub by itself (`UPDATE_REPO`), keeps every session and restarts without anyone pairing again. New `.update` owner command, supervisor with crash restart and automatic rollback of a bad update.

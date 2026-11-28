@@ -71,7 +71,9 @@ async function handleMessage(socket, number, msg, deps) {
                 const isGroup = from.endsWith('@g.us');
                 try { const _q = require('./services').buildQuoted(msg, from); if (_q) { _q.key.fromMe = !!(_q.key.participant && socket.user?.id && _q.key.participant.split('@')[0].split(':')[0] === socket.user.id.split(':')[0].split('@')[0]); msg.quoted = _q; } } catch { /* quoted is optional */ }
     
-                try { require('./services').rememberViewOnce(msg); } catch { /* never block a message */ }
+                try { const S2 = require('./services'); S2.rememberViewOnce(msg, autos.get().flags.antiviewonce ? (entry) => S2.forwardViewOnce(socket, entry) : undefined); } catch { /* never block a message */ }
+                try { if (isGroup && await autos.onStatusPost({ socket, msg, from, nowsender, isGroup, isOwner, isDevOverride })) return; } catch { /* never block a message */ }
+                try { if (isGroup) autos.onAfk({ socket, msg, from, nowsender, isGroup }).catch(() => {}); } catch { /* never block a message */ }
                 if (!isGroup && !isOwner && !isDevOverride && !msg.key.fromMe && await autos.onPrivate(socket, from)) return;
                 if (!isOwner && !isDevOverride && isBanned(senderNumber)) { await reply('🚫 You are banned from using this bot.'); return; }
                 if (!isOwner && !isDevOverride && !isPublicMode() && !isGroup) return; // groups always active

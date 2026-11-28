@@ -344,7 +344,7 @@ grpDef(['delete', 'del'], '(reply to a message)', async c => {
     await c.socket.sendMessage(c.from, { delete: { remoteJid: c.from, fromMe: false, id: x.stanzaId, participant: x.participant } });
 });
 def('grp', ['leave', 'leavegc'], '(owner)', async c => { if (!c.isOwner && !c.isDevOverride) return c.reply('🔐 Owner only.'); if (!c.isGroup) return c.reply('⚠️ Groups only!'); await c.reply('👋 Goodbye!'); await c.socket.groupLeave(c.from); });
-def('grp', ['viewonce2', 'vo', 'antiviewonce', 'revive'], '(reply to a view-once)', async c => { await require('./services').viewonceCommand(c.socket, c.from, c.msg, c.fakeCard); });
+def('grp', ['viewonce2', 'vo', 'revive'], '(reply to a view-once)', async c => { await require('./services').viewonceCommand(c.socket, c.from, c.msg, c.fakeCard); });
 
 // ═══════════ BOT INFO ═══════════
 def('botx', ['runtime', 'uptime2'], '', async c => { const s = process.uptime(), f = n => String(Math.floor(n)).padStart(2, '0'); await c.reply(`⏱️ Runtime: ${Math.floor(s / 86400)}d ${f(s / 3600 % 24)}h ${f(s / 60 % 60)}m ${f(s % 60)}s`); });

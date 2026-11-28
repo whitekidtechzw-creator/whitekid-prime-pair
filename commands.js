@@ -86,7 +86,7 @@ case 'menu': {
     if (want) {
         const one = UI.findSection(secs, want);
         if (!one) { await socket.sendMessage(from, { text: UI.menuIndex(secs, activePrefix) }, { quoted: fakeCard }); break; }
-        await socket.sendMessage(from, { text: one.text + '\n\n⌬ ' + UI.bold('Whitekid Prime') }, { quoted: fakeCard });
+        await socket.sendMessage(from, { text: one.text + '\n\n' + UI.menuFooter() }, { quoted: fakeCard });
         break;
     }
     const mem = process.memoryUsage().rss / 1048576, totalMem = os.totalmem() / 1048576;
@@ -98,12 +98,12 @@ case 'menu': {
     });
     const chJid = config.NEWSLETTER_JID || await resolveChannelJid(socket).catch(() => null);
     const fwd = chJid ? { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: chJid, newsletterName: config.NEWSLETTER_NAME, serverMessageId: 143 } } : {};
-    const footer = '⌬ ' + UI.bold('Whitekid Prime');
+    const footer = UI.menuFooter();
     // ONE message, always: stats card on top, every category under it, and the poster shown at the top of that same bubble
     const full = UI.menuFull(header, secs, footer);
     const emblem = config.MENU_THUMB && fs.existsSync(config.MENU_THUMB) ? config.MENU_THUMB : (botImg && !/^https?:/i.test(botImg) ? botImg : config.RCD_IMAGE_PATH);
     const thumb = await menuThumb(emblem);
-    const card = thumb ? { externalAdReply: { title: 'WHITEKID PRIME', body: `${await totalcmds()} commands · ${activePrefix}menu <category>`, thumbnail: thumb, mediaType: 1, renderLargerThumbnail: true, showAdAttribution: false, sourceUrl: config.USER_CHANNEL_URL || undefined } } : {};
+    const card = thumb ? { externalAdReply: { title: UI.menuBrand({ total: await totalcmds(), prefix: activePrefix }).title, body: UI.menuBrand({ total: await totalcmds(), prefix: activePrefix }).body, thumbnail: thumb, mediaType: 1, renderLargerThumbnail: true, showAdAttribution: false, sourceUrl: config.USER_CHANNEL_URL || undefined } } : {};
     try {
         await socket.sendMessage(from, { text: full, contextInfo: { ...fwd, ...card } }, { quoted: fakeCard });
     } catch (e) {
@@ -284,26 +284,10 @@ case 'nanobanana': {
 }
 case 'sologo': { await react('🎨'); if (!q) return reply(`Usage: ${activePrefix}sologo <prompt>`); try { const { data } = await axios.get(`${config.NEXRAY_API}/ai/sologo?prompt=${encodeURIComponent(q)}`, { responseType: 'arraybuffer', timeout: 60000 }); await socket.sendMessage(from, { image: Buffer.from(data), caption: `🎨 *AI Logo*\nPrompt: ${q}${WM}` }, { quoted: fakeCard }); } catch (e) { reply(`⚠️ ${e.message}`); } break; }
 case 'stablesd': { await react('🎨'); if (!q) return reply(`Usage: ${activePrefix}stablesd <prompt>`); try { const { data } = await axios.get(`${config.DAVID_API}/tools/stablediffusion?prompt=${encodeURIComponent(q)}`, { timeout: 60000 }); const imgUrl = data?.result?.image || data?.imageUrl; if (imgUrl) await replyImg(imgUrl, `🎨 *Stable Diffusion*\nPrompt: ${q}`); else reply('⚠️ Failed.'); } catch (e) { reply(`⚠️ ${e.message}`); } break; }
-case 'veo': { await react('🎥'); if (!q) return reply(`Usage: ${activePrefix}veo <prompt>`); try { await reply(`🎥 *Generating AI video...*\n⏳ This can take up to a minute.`); const vUrl = await paxVideoJob('/ai-video/veo-3.1', q); if (vUrl) { await socket.sendMessage(from, { video: { url: vUrl }, caption: `🎥 *VEO Video*\nPrompt: ${q}${WM}` }, { quoted: fakeCard }); await react('✅'); } else await reply('⚠️ Video generation failed. Try again.'); } catch (e) { reply(`⚠️ ${e.message}`); } break; }
-case 'txt2vid': case 'txt2video': case 'aivid': {
-    await react('🎥'); if (!q) return reply(`Usage: ${activePrefix}txt2vid <prompt>`);
-    await reply(`🎥 *Generating AI video...*\nPrompt: _${q}_\n⏳ This may take 30-60 seconds...`);
-    try {
-        let vidUrl = null;
-        // Primary: Paxsenix VEO (reliable with API key)
-        try { vidUrl = await paxVideoJob('/ai-video/veo-3.1', q); } catch {}
-        // Fallback: Paxsenix VEO 2
-        if (!vidUrl) { try { vidUrl = await paxVideoJob('/ai-video/veo-2', q); } catch {} }
-        // Fallback: RunwayML via Paxsenix
-        if (!vidUrl) { try { const { data: rwD } = await axios.post(`${config.PAXSENIX_URL}/ai-video/runway`, { prompt: q }, { headers: PAXSENIX.headers, timeout: 90000 }); vidUrl = rwD?.video_url || rwD?.url || rwD?.result; } catch {} }
-        // Fallback: OKATSU
-        if (!vidUrl) { try { const { data } = await axios.get(`${config.OKATSU_API}/ai/txt2video?text=${encodeURIComponent(q)}`, { timeout: 60000 }); vidUrl = data?.videoUrl || data?.result; } catch {} }
-        // Fallback: Nexray text2video
-        if (!vidUrl) { try { const { data: nxV } = await axios.post(`${config.NEXRAY_EU}/ai/text2video`, { prompt: q }, { timeout: 90000 }); vidUrl = nxV?.result || nxV?.video_url; } catch {} }
-        if (!vidUrl) return reply('⚠️ Video generation failed. All services are busy. Try again later.');
-        await socket.sendMessage(from, { video: { url: vidUrl }, caption: `🎥 *AI Video Generated!*\nPrompt: ${q}${WM}` }, { quoted: fakeCard });
-        await react('✅');
-    } catch (e) { reply(`⚠️ ${e.message}`); }
+case 'veo': case 'txt2vid': case 'txt2video': case 'aivid': case 'sora': case 'aivideo': {
+    if (!q) return reply(`Usage: ${activePrefix}${command} <describe the video>\nExample: ${activePrefix}${command} a lion walking through a neon city at night`);
+    try { await require('./services').aiVideoCommand({ socket, from, fakeCard, reply, react, WM }, q, command === 'veo' ? 'VEO Video' : 'AI Video'); }
+    catch (e) { reply(`⚠️ ${e.message}`); }
     break;
 }
 case 'suno': {

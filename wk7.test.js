@@ -120,7 +120,7 @@ function mk(argStr, over = {}) {
 const _err = console.error; console.error = () => { }; // silence expected [WK7] error logs during tests
 let pass = 0, fail = 0; const failures = [];
 const ok = (cond, msg) => { if (cond) pass++; else { fail++; failures.push(msg); } };
-const names = WK7.names().filter(n => !require('./wk8').NAMES.has(n) && !require('./wk9').NAMES.has(n) && !require('./wk10').NAMES.has(n) && !require('./wk11').NAMES.has(n));
+const names = WK7.names().filter(n => !require('./wk8').NAMES.has(n) && !require('./wk9').NAMES.has(n) && !require('./wk10').NAMES.has(n) && !require('./wk11').NAMES.has(n) && !require('./wk12').NAMES.has(n) && !require('./customcmds').NAMES.has(n));
 
 (async () => {
     // 1. coverage
@@ -166,7 +166,7 @@ const names = WK7.names().filter(n => !require('./wk8').NAMES.has(n) && !require
     { const { ctx, out } = mk('', { quotedText: 'quoted words here' }); await WK7.run('upper', ctx); ok(/QUOTED WORDS HERE/.test(out.join('')), 'text tools must read quoted message'); }
     { core.resetCooling(); fetchMode = 'down'; fetchCalls = []; const a = mk('hello'); await WK7.run('define', a.ctx); const n1 = fetchCalls.length; const b = mk('hello'); await WK7.run('define', b.ctx); ok(fetchCalls.length === n1, 'circuit-breaker should skip a dead host for 2 minutes'); fetchMode = 'mock'; core.resetCooling(); }
     ok(WK7.has('upper') && !WK7.has('definitely-not-a-command'), 'has() works');
-    { const r = await WK7.run('nope', mk('').ctx); ok(r === false, 'unknown command returns false'); }
+    { const r = await WK7.run('definitely-not-a-command', mk('').ctx); ok(r === false, 'unknown command returns false'); }
 
     console.error = _err;
     console.log(`\nWK7 TEST RESULT: ${pass} checks passed, ${fail} failed — ${names.length} commands covered`);

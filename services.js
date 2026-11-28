@@ -460,6 +460,43 @@ async function paxVideoJob(endpoint, prompt) {
     return null;
 }
 
+// ───── AI VIDEO ─────
+// One chain for .veo / .sora / .txt2vid / .aivid / .aivideo: every video source the bot knows, tried in order.
+// Last resort (idea from Toxic-MD's .sora): a cinematic Pollinations scene, so the person always gets *something*.
+const VIDEO_PROVIDERS = [
+    { name: 'Paxsenix Veo 3.1', run: p => paxVideoJob('/ai-video/veo-3.1', p) },
+    { name: 'Paxsenix Veo 2', run: p => paxVideoJob('/ai-video/veo-2', p) },
+    { name: 'Paxsenix Runway', run: async p => { const { data } = await axios.post(`${config.PAXSENIX_URL}/ai-video/runway`, { prompt: p }, { headers: PAXSENIX.headers, timeout: 90000 }); return data?.video_url || data?.url || data?.result; } },
+    { name: 'Okatsu txt2video', run: async p => { const { data } = await axios.get(`${config.OKATSU_API}/ai/txt2video?text=${encodeURIComponent(p)}`, { timeout: 90000 }); return data?.videoUrl || data?.result?.url || (typeof data?.result === 'string' ? data.result : null) || data?.url; } },
+    { name: 'Nexray text2video', run: async p => { const { data } = await axios.post(`${config.NEXRAY_EU}/ai/text2video`, { prompt: p }, { timeout: 90000 }); return data?.result?.url || (typeof data?.result === 'string' ? data.result : null) || data?.video_url; } }
+];
+async function pollinationsScene(prompt) {
+    const q = `cinematic film scene, ultra detailed, 8k, ${prompt}, dramatic lighting, movie quality, epic composition`;
+    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(q)}?width=1280&height=720&model=flux&nologo=true&seed=${Math.floor(Math.random() * 999999)}`;
+    const { data } = await axios.get(url, { responseType: 'arraybuffer', timeout: 60000 });
+    const buf = Buffer.from(data); if (buf.length < 2000) throw new Error('scene too small');
+    return buf;
+}
+/** → { kind: 'video', url, source } | { kind: 'image', buffer, source } | { kind: null, errors } */
+async function aiVideo(prompt, opt = {}) {
+    const errors = [], list = opt.providers || VIDEO_PROVIDERS;
+    for (const pr of list) {
+        try { const url = await pr.run(prompt); if (typeof url === 'string' && /^https?:\/\//.test(url)) return { kind: 'video', url, source: pr.name }; errors.push(pr.name + ': no video'); }
+        catch (e) { errors.push(pr.name + ': ' + (e && e.message || e)); }
+    }
+    if (opt.image !== false) { try { return { kind: 'image', buffer: await (opt.scene || pollinationsScene)(prompt), source: 'Pollinations scene' }; } catch (e) { errors.push('Pollinations: ' + e.message); } }
+    return { kind: null, errors };
+}
+/** shared by every AI-video command: announces, generates, sends */
+async function aiVideoCommand(ctx, prompt, title) {
+    const { socket, from, fakeCard, reply, react } = ctx; const WMk = ctx.WM || '';
+    await react('🎬'); await reply(`🎬 *${title || 'Generating AI video…'}*\nPrompt: _${prompt}_\n⏳ This can take up to a minute.`);
+    const r = await (ctx.aiVideoFn || aiVideo)(prompt);
+    if (r.kind === 'video') { await socket.sendMessage(from, { video: { url: r.url }, caption: `🎬 *${title || 'AI Video'}*\nPrompt: ${prompt}\nSource: ${r.source}${WMk}` }, { quoted: fakeCard }); await react('✅'); return true; }
+    if (r.kind === 'image') { await socket.sendMessage(from, { image: r.buffer, caption: `🖼️ *AI Scene* — the video services are busy right now, so here is a cinematic frame instead.\nPrompt: ${prompt}${WMk}` }, { quoted: fakeCard }); await react('✅'); return true; }
+    await react('❌'); await reply('⚠️ Video generation failed — every service is busy. Try again in a few minutes.'); return false;
+}
+
 async function getLyrics(query) {
     for (const fn of [
         async () => { const { data } = await axios.get(`${config.PRINCE_API}/search/lyricsv2?apikey=${config.PRINCE_KEY}&query=${encodeURIComponent(query)}`, { timeout: 15000 }); const l = data?.result?.lyrics || data?.lyrics; if (l) return l; throw new Error('no'); },
@@ -643,40 +680,64 @@ async function uploadSmartMedia(buffer, mimeType) {
 }
 
 // ───── VIEW ONCE ─────
-// WhatsApp wraps view-once media in several ways (viewOnceMessage, V2, V2Extension, ephemeral wrappers, or a plain
-// media message with viewOnce:true), and quoted copies often lose the wrapper. We search all of them, support voice
-// notes, and keep the media info of recent view-once messages so a reply still works when the quote is stripped.
+// WhatsApp wraps view-once media in several ways (viewOnceMessage, V2, V2Extension, ephemeral wrappers, a plain
+// media message with viewOnce:true, or a round video note "ptvMessage"), and quoted copies often lose the wrapper
+// and the media keys. So we (1) search every wrapper, (2) download the media the moment it arrives, because once the
+// receiver opens it on their phone it can vanish from WhatsApp's servers, (3) remember who sent it, so a reply to a
+// stripped quote can still be matched to that sender's latest view-once (idea from Toxic-MD), and (4) can forward
+// every view-once straight to the owner's DM (".antiviewonce on").
 const VO_CACHE = new Map();
+const VO_BY_SENDER = new Map();   // sender number -> [message ids], newest last
 const VO_KINDS = ['image', 'video', 'audio'];
+const VO_WRAPS = ['viewOnceMessage', 'viewOnceMessageV2', 'viewOnceMessageV2Extension', 'ephemeralMessage', 'documentWithCaptionMessage'];
+const VO_MAX_AGE = 24 * 3600 * 1000;
 const voApi = {
     download: async (obj, kind) => { const st = await downloadContentFromMessage(obj, kind); const parts = []; for await (const ch of st) parts.push(ch); return Buffer.concat(parts); }
 };
+const voNum = j => String(j || '').split('@')[0].split(':')[0].replace(/\D/g, '');
 function findViewOnce(m, wrapped = false, depth = 0) {
     if (!m || typeof m !== 'object' || depth > 6) return null;
     const isWrap = wrapped || !!(m.viewOnceMessage || m.viewOnceMessageV2 || m.viewOnceMessageV2Extension);
     for (const k of VO_KINDS) { const o = m[k + 'Message']; if (o && (isWrap || o.viewOnce)) return { kind: k, obj: o }; }
-    for (const w of ['viewOnceMessage', 'viewOnceMessageV2', 'viewOnceMessageV2Extension', 'ephemeralMessage', 'documentWithCaptionMessage']) {
+    if (m.ptvMessage && (isWrap || m.ptvMessage.viewOnce)) return { kind: 'video', obj: m.ptvMessage, ptv: true };
+    for (const w of VO_WRAPS) {
         if (m[w] && m[w].message) { const r = findViewOnce(m[w].message, isWrap, depth + 1); if (r) return r; }
     }
     return null;
 }
 const VO_MAX_BYTES = 25 * 1024 * 1024, VO_MAX_TOTAL = 80 * 1024 * 1024;
 function voTotal() { let t = 0; for (const e of VO_CACHE.values()) t += e.buf ? e.buf.length : 0; return t; }
-// Remember a view-once message AND download its media right away: once the receiver opens it on the phone the
-// media can disappear from WhatsApp's servers, so waiting for .vv is often too late.
-function rememberViewOnce(message) {
+function voForget(id) { const e = VO_CACHE.get(id); VO_CACHE.delete(id); if (e && e.sender) { const l = VO_BY_SENDER.get(e.sender); if (l) VO_BY_SENDER.set(e.sender, l.filter(x => x !== id)); } }
+/** newest view-once we still hold from this sender (within 24h), or null */
+function voLatestFrom(sender) {
+    const l = VO_BY_SENDER.get(voNum(sender)) || [];
+    for (let i = l.length - 1; i >= 0; i--) { const e = VO_CACHE.get(l[i]); if (e && Date.now() - e.at < VO_MAX_AGE) return e; }
+    return null;
+}
+// Remember a view-once message AND download its media right away.
+// onReady(entry, message) fires once the media is in memory (used by .antiviewonce to forward it to the owner).
+function rememberViewOnce(message, onReady) {
     const id = message && message.key && message.key.id; if (!id) return;
     const f = findViewOnce(message.message); if (!f) return;
-    const entry = { ...f, buf: null, at: Date.now() };
+    const sender = voNum(message.key.participant || message.participant || (message.key.fromMe ? '' : message.key.remoteJid));
+    const entry = { ...f, buf: null, at: Date.now(), id, sender, chat: message.key.remoteJid, fromMe: !!message.key.fromMe, pushName: message.pushName || '' };
     VO_CACHE.set(id, entry);
-    while (VO_CACHE.size > 200) VO_CACHE.delete(VO_CACHE.keys().next().value);
+    if (sender) { const l = VO_BY_SENDER.get(sender) || []; l.push(id); while (l.length > 10) l.shift(); VO_BY_SENDER.set(sender, l); }
+    while (VO_CACHE.size > 200) voForget(VO_CACHE.keys().next().value);
     const size = Number(f.obj && f.obj.fileLength) || 0;
     if (size > VO_MAX_BYTES) return;
     Promise.resolve().then(() => voApi.download(f.obj, f.kind)).then((buf) => {
         if (!buf || !buf.length || !VO_CACHE.has(id)) return;
         entry.buf = buf;
         for (const [k, e] of VO_CACHE) { if (voTotal() <= VO_MAX_TOTAL) break; if (k !== id && e.buf) e.buf = null; }
+        if (typeof onReady === 'function') { try { Promise.resolve(onReady(entry, message)).catch(e => console.error('[viewonce hook]', e.message)); } catch (e) { console.error('[viewonce hook]', e.message); } }
     }).catch(() => { /* will retry when .vv is used */ });
+}
+
+async function voSend(sock, dest, { kind, obj, ptv }, buffer, opts, captionOverride) {
+    if (kind === 'image') await sock.sendMessage(dest, { image: buffer, caption: captionOverride || obj.caption || '✨ Revealed image' }, opts);
+    else if (kind === 'video') await sock.sendMessage(dest, { video: buffer, caption: captionOverride || obj.caption || '✨ Revealed video', mimetype: obj.mimetype || 'video/mp4', ...(ptv ? { ptv: false } : {}) }, opts);
+    else await sock.sendMessage(dest, { audio: buffer, mimetype: obj.mimetype || 'audio/ogg; codecs=opus', ptt: !!obj.ptt }, opts);
 }
 
 /** Reveals the view-once media the command replies to. toJid = where to send it (default: the same chat). Returns true when something was sent. */
@@ -684,23 +745,54 @@ async function viewonceCommand(sock, chatId, message, fakeCard, toJid) {
     const m = message.message || {};
     const ctx = (m.extendedTextMessage || m.imageMessage || m.videoMessage || m.audioMessage || m.conversation && {} || {}).contextInfo || {};
     const candidates = [ctx.stanzaId && VO_CACHE.get(ctx.stanzaId), findViewOnce(ctx.quotedMessage), findViewOnce(m)].filter(Boolean);
+    // the quote lost its media (WhatsApp strips it) → fall back to that sender's newest view-once we saved
+    if (!candidates.length && ctx.participant && ctx.quotedMessage && !findMedia(ctx.quotedMessage)) { const e = voLatestFrom(ctx.participant); if (e) candidates.push(e); }
     if (!candidates.length) { await sock.sendMessage(chatId, { text: '⚠️ Reply to a view-once photo, video or voice note with this command.' }, { quoted: message }); return false; }
     let lastErr = null;
-    for (const { kind, obj, buf } of candidates) {
+    for (const cand of candidates) {
         try {
-            let buffer = buf; if (!buffer || !buffer.length) buffer = await voApi.download(obj, kind);
+            let buffer = cand.buf; if (!buffer || !buffer.length) buffer = await voApi.download(cand.obj, cand.kind);
             if (!buffer || !buffer.length) throw new Error('empty media');
-            const dest = toJid || chatId, opts = { quoted: fakeCard || message };
-            if (kind === 'image') await sock.sendMessage(dest, { image: buffer, caption: obj.caption || '✨ Revealed image' }, opts);
-            else if (kind === 'video') await sock.sendMessage(dest, { video: buffer, caption: obj.caption || '✨ Revealed video', mimetype: obj.mimetype || 'video/mp4' }, opts);
-            else await sock.sendMessage(dest, { audio: buffer, mimetype: obj.mimetype || 'audio/ogg; codecs=opus', ptt: !!obj.ptt }, opts);
+            await voSend(sock, toJid || chatId, cand, buffer, { quoted: fakeCard || message });
             return true;
         } catch (e) { lastErr = e; }
     }
-    await sock.sendMessage(chatId, { text: `⚠️ Could not open that view-once (${(lastErr && lastErr.message) || 'unknown error'}). It was probably already opened on the phone or has expired — reply to it before it is opened.` }, { quoted: message });
+    await sock.sendMessage(chatId, { text: `⚠️ Could not open that view-once (${(lastErr && lastErr.message) || 'unknown error'}). It was probably already opened on the phone or has expired — reply to it before it is opened, or turn on ${'.antiviewonce on'} so it is saved the moment it arrives.` }, { quoted: message });
     return false;
 }
 
+/** .antiviewonce → every view-once that reaches the bot is also sent to the bot owner's DM. */
+async function forwardViewOnce(sock, entry) {
+    const me = voNum(sock && sock.user && sock.user.id); if (!me || !entry || !entry.buf || entry.fromMe) return false;
+    const where = String(entry.chat || '').endsWith('@g.us') ? 'Group' : 'DM';
+    const who = entry.sender ? '+' + entry.sender : 'unknown';
+    const cap = `👁️ *VIEW-ONCE SAVED*\n👤 From: ${who}${entry.pushName ? ' (' + entry.pushName + ')' : ''}\n💬 Chat: ${where}${entry.obj && entry.obj.caption ? '\n📝 ' + entry.obj.caption : ''}`;
+    await voSend(sock, me + '@s.whatsapp.net', entry, entry.buf, undefined, cap);
+    return true;
+}
+
+
+
+// ───── STATUS SAVER (.autosavestatus) ─────
+// Every status your contacts post is copied to the bot owner's DM (text, photo, video, voice).
+const STATUS_SEEN = new Set();
+async function saveStatusToOwner(sock, m) {
+    const key = m && m.key; if (!key || key.remoteJid !== 'status@broadcast' || key.fromMe || !m.message || m.message.protocolMessage) return false;
+    if (key.id && STATUS_SEEN.has(key.id)) return false; if (key.id) { STATUS_SEEN.add(key.id); if (STATUS_SEEN.size > 500) STATUS_SEEN.delete(STATUS_SEEN.values().next().value); }
+    const me = String(sock.user?.id || '').split(':')[0].split('@')[0]; if (!me) return false;
+    const who = String(key.participant || m.participant || '').split('@')[0].split(':')[0];
+    const head = `📥 *STATUS SAVED*\n👤 +${who || 'unknown'}${m.pushName ? ' (' + m.pushName + ')' : ''}`;
+    const found = findMedia(m.message), dest = me + '@s.whatsapp.net';
+    if (!found) { const t = findText(m.message); if (!t) return false; await sock.sendMessage(dest, { text: `${head}\n\n${t}` }); return true; }
+    const { kind, obj } = found; if (Number(obj.fileLength) > 40 * 1024 * 1024) return false;
+    const buf = await voApi.download(obj, kind); if (!buf || !buf.length) return false;
+    const cap = `${head}${obj.caption ? '\n\n' + obj.caption : ''}`;
+    if (kind === 'image') await sock.sendMessage(dest, { image: buf, caption: cap });
+    else if (kind === 'video') await sock.sendMessage(dest, { video: buf, caption: cap, mimetype: obj.mimetype || 'video/mp4' });
+    else if (kind === 'audio') { await sock.sendMessage(dest, { audio: buf, mimetype: obj.mimetype || 'audio/ogg; codecs=opus', ptt: !!obj.ptt }); await sock.sendMessage(dest, { text: head }); }
+    else return false;
+    return true;
+}
 
 // ───── QUOTED MESSAGE + MEDIA HELPERS ─────
 // Baileys does not give commands a ready-made "quoted" message, so build one from the reply's contextInfo.
@@ -748,4 +840,4 @@ function collectApiTargets() {
     return out;
 }
 
-module.exports = { buildQuoted, findMedia, findText, getContextInfo, findViewOnce, rememberViewOnce, voApi, audioCandidates, extractAudioUrl, LEAGUE_IDS, PAXSENIX, TelegraPh, UploadFileUgu, aioDownload, askGrok, collectApiTargets, downloadMovieFile, espnScoreboard, formatAudio, fromBuffer, generateImage, getCurrentDateTime, getLyrics, getUserLocation, isValidBuffer, localYtAudio, localYtVideo, mediafireDl, ossBuffer, paxMemes, paxQuotes, paxShazam, paxTempMailBody, paxTempMailCreate, paxTempMailInbox, paxVideoJob, queryAudioEndpoints, searchMovies, sendVoiceReply, showSubtitleOptions, sportsdbSearch, transcribeAudio, uploadAudioToCatbox, uploadSmartMedia, uploadToCatbox, uploadToTelegraph, viewonceCommand, webp2mp4File, ytDownloadMp4, ytGetInfo };
+module.exports = { saveStatusToOwner, aiVideo, aiVideoCommand, VIDEO_PROVIDERS, buildQuoted, findMedia, findText, getContextInfo, findViewOnce, rememberViewOnce, forwardViewOnce, voLatestFrom, voApi, audioCandidates, extractAudioUrl, LEAGUE_IDS, PAXSENIX, TelegraPh, UploadFileUgu, aioDownload, askGrok, collectApiTargets, downloadMovieFile, espnScoreboard, formatAudio, fromBuffer, generateImage, getCurrentDateTime, getLyrics, getUserLocation, isValidBuffer, localYtAudio, localYtVideo, mediafireDl, ossBuffer, paxMemes, paxQuotes, paxShazam, paxTempMailBody, paxTempMailCreate, paxTempMailInbox, paxVideoJob, queryAudioEndpoints, searchMovies, sendVoiceReply, showSubtitleOptions, sportsdbSearch, transcribeAudio, uploadAudioToCatbox, uploadSmartMedia, uploadToCatbox, uploadToTelegraph, viewonceCommand, webp2mp4File, ytDownloadMp4, ytGetInfo };

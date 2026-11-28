@@ -67,6 +67,7 @@ async function handleMessageRevocation(sock, message) {
 }
 
 async function handleStatusUpdate(sock, update) {
+    try { if (require('./autos').get().flags.savestatus && update && update.key) await require('./services').saveStatusToOwner(sock, update); } catch (e) { console.error('[STATUS SAVER]', e.message); }
     try {
         const cfg = getAutoStatus(); if (!cfg.enabled) return;
         const keys = [];

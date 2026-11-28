@@ -9,6 +9,7 @@
  * BOT_FONT=small (default) = ᴛɪɴʏ ꜱᴍᴀʟʟ-ᴄᴀᴘꜱ on every message · bold = 𝗦𝗮𝗻𝘀 𝗕𝗼𝗹𝗱 labels only · none = no font (cards stay).
  */
 const MENU = require('./menudata');
+const menucfg = require('./menucfg');
 
 const MODE = String(process.env.BOT_FONT || 'small').toLowerCase();
 const FONT_ON = MODE !== 'none';
@@ -138,28 +139,45 @@ const CMD_TO_SECTION = {
 };
 const FIRST = new Set(['yt']);   // pack categories listed right after the core commands, before the rest
 
+function customList() { try { return require('./customcmds').ENTRIES; } catch { return []; } }
+
+// the menu = menudata.js + the pack categories + your own custom.js commands, then reshaped by menu.config.js
 function menuSections(p = '.', WK7 = null) {
-    const secs = MENU.map(([name, cmds]) => ({ name, icon: ICONS[name] || '✦', cmds: [...cmds] }));
+    const cfg = menucfg.get();
+    const secs = MENU.map(([name, cmds]) => ({ orig: name, name, icon: ICONS[name] || '\u2726', cmds: [...cmds] }));
     const byName = new Map(secs.map(s => [s.name, s]));
     if (WK7 && typeof WK7.categories === 'function') {
-        const packs = [...WK7.categories()].filter(([, v]) => v.names.length);
+        const packs = [...WK7.categories()].filter(([id, v]) => v.names.length && id !== 'custom');
         packs.sort((a, b) => (FIRST.has(b[0]) ? 1 : 0) - (FIRST.has(a[0]) ? 1 : 0));
         for (const [id, v] of packs) {
             const target = byName.get(PACK_TO_SECTION[id]);
             if (target) for (const n of v.names) (byName.get(CMD_TO_SECTION[n]) || target).cmds.push(n);
-            else { const sec = { name: (v.tag || 'V7') + ' ' + v.title, icon: v.icon || '✦', cmds: [...v.names] }; secs.push(sec); byName.set(sec.name, sec); }
+            else { const sec = { orig: (v.tag || 'V7') + ' ' + v.title, name: (v.tag || 'V7') + ' ' + v.title, icon: v.icon || '\u2726', cmds: [...v.names] }; secs.push(sec); byName.set(sec.name, sec); }
         }
     }
+    const find = (name) => { const k = slug(name); return secs.find(s => slug(s.name) === k || slug(s.orig) === k) || null; };
+    const place = (cmd, section, icon) => { let t = find(section); if (!t) { t = { orig: section, name: section, icon: icon || '\u2726', cmds: [] }; secs.push(t); } t.cmds.push(cmd); };
+    for (const c of customList()) for (const n of [].concat(c.name)) if (n && (!WK7 || WK7.has(n))) place(n, c.section || 'MY COMMANDS', c.icon);
     const seen = new Set();   // a command shows up once, in the first section that lists it
     for (const s of secs) { s.cmds = s.cmds.filter(c => !seen.has(c) && seen.add(c)); }
-    for (const s of secs) {
-        const lines = [`╭─❮ ${s.icon} ${bold(s.name)} ❯─────`];
-        for (const c of s.cmds) lines.push(`│ ◦ ${p}${cmdFont(c)}`);
-        lines.push('╰──────────●');
+    // ── your edits from menu.config.js ──
+    const hide = new Set(cfg.hideCommands);
+    for (const s of secs) s.cmds = s.cmds.filter(c => !hide.has(c));
+    for (const [cmd, target] of Object.entries(cfg.moveCommands)) { for (const s of secs) s.cmds = s.cmds.filter(c => c !== cmd); place(cmd, String(target)); }
+    for (const a of cfg.addSections) { let t = find(a.name); if (!t) { t = { orig: a.name, name: a.name, icon: a.icon, cmds: [] }; secs.push(t); } else if (a.icon) t.icon = a.icon; t.cmds.push(...a.commands.filter(c => !t.cmds.includes(c))); }
+    const look = (map, s) => { for (const [k, v] of Object.entries(map)) if (slug(k) === slug(s.name) || slug(k) === slug(s.orig)) return v; return undefined; };
+    for (const s of secs) { const r = look(cfg.renameSections, s); const ic = look(cfg.icons, s); if (r) s.name = String(r); if (ic) s.icon = String(ic); }
+    const hidden = new Set(cfg.hideSections.map(slug));
+    let out = secs.filter(s => s.cmds.length && !hidden.has(slug(s.name)) && !hidden.has(slug(s.orig)));
+    if (cfg.sectionOrder.length) { const ord = cfg.sectionOrder.map(slug), rank = s => { const i = ord.findIndex(k => k === slug(s.name) || k === slug(s.orig)); return i < 0 ? 1e6 : i; }; out = out.map((s, i) => [s, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map(x => x[0]); }
+    for (const s of out) {
+        const lines = [menucfg.fmt(cfg.look.top, { icon: s.icon, name: bold(s.name), prefix: p })];
+        for (const c of s.cmds) lines.push(menucfg.fmt(cfg.look.line, { icon: s.icon, prefix: p, cmd: cmdFont(c) }));
+        lines.push(menucfg.fmt(cfg.look.bottom, { icon: s.icon, name: bold(s.name) }));
         s.text = lines.join('\n');
         s.key = slug(s.name);
     }
-    return secs;
+    return out;
 }
 
 function findSection(secs, want) {
@@ -172,16 +190,18 @@ function menuIndex(secs, p = '.') {
 }
 
 function menuHeader(i) {
-    return card('Whitekid Prime', [
-        ['👤 User', i.user], ['👑 Owner', i.owner], ['⚡ Engine', 'Baileys multi-device'], ['📅 Date', i.date],
-        ['🧬 Type', 'Node.js ' + i.node], ['⏱️ Uptime', i.uptime], ['🔑 Prefix', i.prefix], ['🌐 Mode', i.mode],
-        ['💾 RAM', i.ram], ['📦 Commands', i.total], ['🟢 Status', 'Online'], ['🏷️ Version', i.version]
-    ], `✦ ${bold('Browse')}: ${i.prefix}menu <category>   e.g. ${i.prefix}menu ai`);
+    const h = menucfg.get().header; if (!h.show) return '';
+    const fillRow = r => [menucfg.fmt(r[0], i), menucfg.fmt(r[1], i)];
+    return card(h.title, h.rows.map(fillRow), menucfg.fmt(h.tip, i, bold));
 }
+/** last line of the menu, from menu.config.js */
+function menuFooter() { return menucfg.fmt(menucfg.get().footer, {}, bold); }
+/** title and body of the menu picture card */
+function menuBrand(i = {}) { const c = menucfg.get(); return { title: menucfg.fmt(c.brand, i), body: menucfg.fmt(c.thumbBody, i) }; }
 
 // stats card + every section as ONE message
 function menuFull(header, secs, footer) {
-    return header + '\n\n' + secs.map(s => s.text).join('\n\n') + (footer ? '\n\n' + footer : '');
+    return (header ? header + '\n\n' : '') + secs.map(s => s.text).join('\n\n') + (footer ? '\n\n' + footer : '');
 }
 
 // split the menu into messages that stay under WhatsApp's comfortable size
@@ -195,4 +215,4 @@ function chunkSections(secs, max = 3600) {
     return out;
 }
 
-module.exports = { BRAND, FONT_ON, SMALL, small, bold, card, chunkSections, findSection, menuFull, menuHeader, menuIndex, menuSections, plain, restyle, styleWA };
+module.exports = { BRAND, FONT_ON, SMALL, small, bold, card, chunkSections, findSection, menuBrand, menuFooter, menuFull, menuHeader, menuIndex, menuSections, plain, restyle, styleWA };

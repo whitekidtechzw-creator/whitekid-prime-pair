@@ -8,7 +8,7 @@ const fs = require('fs'), path = require('path');
 const { DATA_DIR } = require('./config');
 const FILE = path.join(DATA_DIR, 'autos.json');
 
-const DEFAULTS = () => ({ flags: { autoreact: false, autotyping: false, anticall: false, pmblocker: false }, antibadword: {}, antitag: {}, chatbot: {}, sudo: [], counts: {}, bio: {} });
+const DEFAULTS = () => ({ flags: { autoreact: false, autotyping: false, anticall: false, pmblocker: false, antiviewonce: false, savestatus: false }, antibadword: {}, antitag: {}, chatbot: {}, sudo: [], counts: {}, bio: {}, antigstatus: {}, antistatusmention: {}, afk: {} });
 let S = DEFAULTS(), loaded = false, timer = null;
 
 function load() {
@@ -101,6 +101,62 @@ async function onMessage(x) {
 }
 
 
+
+// ───── group status protection (ideas from Toxic-MD) ─────
+// antigstatus:       delete a "group status" post (contextInfo.isGroupStatus) from non-admins
+// antistatusmention: delete a "this group was mentioned in a status" notice (groupStatusMentionMessage); mode "kick" also removes the sender
+const STATUS_KINDS = { antigstatus: 'antigstatus', antistatusmention: 'antistatusmention' };
+function groupMode(kind, gid) { return (load()[STATUS_KINDS[kind]] || {})[gid] || 'off'; }
+function setGroupMode(kind, gid, mode) { const k = STATUS_KINDS[kind]; if (!k) return false; load(); if (!S[k]) S[k] = {}; S[k][gid] = mode; save(); return true; }
+function isGroupStatusPost(m) {
+    if (!m || typeof m !== 'object') return false;
+    for (const k of ['extendedTextMessage', 'imageMessage', 'videoMessage', 'documentMessage', 'audioMessage', 'stickerMessage']) if (m[k] && m[k].contextInfo && m[k].contextInfo.isGroupStatus === true) return true;
+    return false;
+}
+const isStatusMention = m => !!(m && (m.groupStatusMentionMessage || (m.messageContextInfo && m.groupStatusMentionMessage)));
+/** Called for every group message (also media without caption). Returns true when it removed something. */
+async function onStatusPost(x) {
+    const { socket, msg, from, nowsender, isGroup, isOwner, isDevOverride } = x;
+    try {
+        if (!isGroup || !msg || !msg.message || msg.key?.fromMe) return false;
+        const m = msg.message, post = isGroupStatusPost(m), mention = isStatusMention(m);
+        if (!post && !mention) return false;
+        const kind = post ? 'antigstatus' : 'antistatusmention', mode = groupMode(kind, from);
+        if (mode === 'off') return false;
+        if (isOwner || isDevOverride || isSudo(nowsender)) return false;
+        const meta = await socket.groupMetadata(from), me = digits(String(socket.user?.id || '').split(':')[0].split('@')[0]);
+        const who = digits(String(nowsender).split('@')[0].split(':')[0]);
+        const isAdm = j => meta.participants.some(p => p.admin && [p.id, p.phoneNumber, p.jid].some(v => v && digits(String(v).split('@')[0].split(':')[0]) === j));
+        if (isAdm(who)) return false;
+        if (!isAdm(me)) { await socket.sendMessage(from, { text: `⚠️ @${who} sent a ${post ? 'group status' : 'status mention'}. Make me an admin so I can remove it.`, mentions: [nowsender] }); return false; }
+        await socket.sendMessage(from, { delete: { remoteJid: from, fromMe: false, id: msg.key.id, participant: msg.key.participant || nowsender } }).catch(() => {});
+        if (mode === 'kick') { await socket.groupParticipantsUpdate(from, [nowsender], 'remove').catch(() => {}); await socket.sendMessage(from, { text: `🚫 @${who} was removed for a ${post ? 'group status' : 'status mention'}.`, mentions: [nowsender] }); }
+        else await socket.sendMessage(from, { text: `⚠️ @${who} ${post ? 'group status posts' : 'status mentions'} are not allowed here.`, mentions: [nowsender] });
+        return true;
+    } catch (e) { console.error('[antistatus]', e.message); return false; }
+}
+
+// ───── AFK ─────
+function setAfk(num, reason) { load(); if (!S.afk) S.afk = {}; S.afk[digits(num)] = { at: Date.now(), reason: String(reason || '').slice(0, 200) }; save(); }
+function clearAfk(num) { load(); const n = digits(num), had = !!(S.afk && S.afk[n]); if (had) { delete S.afk[n]; save(); } return had; }
+function getAfk(num) { return (load().afk || {})[digits(num)] || null; }
+function fmtAfk(ms) { const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60); return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : m ? `${m}m` : `${s}s`; }
+/** group messages: welcome an AFK person back, and tell people who tag or reply to someone who is AFK */
+async function onAfk(x) {
+    const { socket, msg, from, nowsender, isGroup } = x;
+    try {
+        if (!isGroup || !msg || msg.key?.fromMe) return false;
+        const A = load().afk || {}; if (!Object.keys(A).length) return false;
+        const me = digits(String(nowsender).split('@')[0].split(':')[0]);
+        if (A[me]) { const a = A[me]; clearAfk(me); await socket.sendMessage(from, { text: `👋 Welcome back @${me}! You were AFK for ${fmtAfk(Date.now() - a.at)}.`, mentions: [nowsender] }, { quoted: msg }); }
+        const ci = msg.message?.extendedTextMessage?.contextInfo || {};
+        const hit = new Set([...(ci.mentionedJid || []), ci.participant].filter(Boolean).map(j => digits(String(j).split('@')[0].split(':')[0])));
+        const lines = []; for (const n of hit) if (A[n] && n !== me) lines.push(`💤 @${n} is AFK (${fmtAfk(Date.now() - A[n].at)})${A[n].reason ? ': ' + A[n].reason : ''}`);
+        if (lines.length) { await socket.sendMessage(from, { text: lines.join('\n'), mentions: [...hit].map(n => n + '@s.whatsapp.net') }, { quoted: msg }); return true; }
+    } catch (e) { console.error('[afk]', e.message); }
+    return false;
+}
+
 // ───── autobio: keeps the bot's WhatsApp "About" fresh (time, date, uptime) ─────
 // Settings are per bot number: bio[number] = { on, text }. {time} {date} {uptime} {prefix} {bot} are filled in on every update.
 const BIO_DEFAULT = '🤖 WHITEKID PRIME • ⏱ {uptime} • 🕒 {time} • {prefix}menu';
@@ -170,4 +226,4 @@ async function onPrivate(socket, from) {   // returns true if the sender was blo
     return true;
 }
 
-module.exports = { api, get, bioCfg, setBio, renderBio, applyBio, startBio, botNum, BIO_DEFAULT, BIO_MAX, isSudo, addSudo, delSudo, setFlag, badCfg, setBad, setTag, setChatbot, hasBadWord, count, top, onMessage, onCall, onPrivate, _reset: () => { S = DEFAULTS(); loaded = true; } };
+module.exports = { groupMode, setGroupMode, isGroupStatusPost, onStatusPost, setAfk, clearAfk, getAfk, onAfk, api, get, bioCfg, setBio, renderBio, applyBio, startBio, botNum, BIO_DEFAULT, BIO_MAX, isSudo, addSudo, delSudo, setFlag, badCfg, setBad, setTag, setChatbot, hasBadWord, count, top, onMessage, onCall, onPrivate, _reset: () => { S = DEFAULTS(); loaded = true; } };
