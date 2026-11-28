@@ -34,6 +34,7 @@ const config = {
     USER_CHANNEL_URL: 'https://whatsapp.com/channel/0029VbE9GwO2P59fKhOKUT3B', NEWSLETTER_NAME: 'Whitekid Prime bot',
     RCD_IMAGE_PATH: BOT_IMAGE,
     MENU_IMAGE: require('path').join(__dirname, 'assets', 'menu.jpg'),
+    MENU_THUMB: require('path').join(__dirname, 'assets', 'menu-thumb.jpg'),
     WATERMARK: '\n',
     MAX_RETRIES: 3, OTP_EXPIRY: 300000,
     GROUP_INVITE_LINK: 'https://chat.whatsapp.com/BnGr96zHiz075lNTZzvRUN?s=cl&p=a&mlu=0',

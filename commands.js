@@ -98,24 +98,17 @@ case 'menu': {
     });
     const chJid = config.NEWSLETTER_JID || await resolveChannelJid(socket).catch(() => null);
     const fwd = chJid ? { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: chJid, newsletterName: config.NEWSLETTER_NAME, serverMessageId: 143 } } : {};
-    const emblem = botImg && !/^https?:/i.test(botImg) ? botImg : config.RCD_IMAGE_PATH;
     const footer = '⌬ ' + UI.bold('Whitekid Prime');
-    // ONE message: stats card on top, every category under it (a small emblem card is attached as the thumbnail)
-    const body = secs.map(x => x.text).join('\n\n') + '\n\n' + footer;
-    const fs = require('fs');
-    const hasPoster = config.MENU_IMAGE && fs.existsSync(config.MENU_IMAGE);
+    // ONE message, always: stats card on top, every category under it, and the poster shown at the top of that same bubble
+    const full = UI.menuFull(header, secs, footer);
+    const emblem = config.MENU_THUMB && fs.existsSync(config.MENU_THUMB) ? config.MENU_THUMB : (botImg && !/^https?:/i.test(botImg) ? botImg : config.RCD_IMAGE_PATH);
+    const thumb = await menuThumb(emblem);
+    const card = thumb ? { externalAdReply: { title: 'WHITEKID PRIME', body: `${await totalcmds()} commands · ${activePrefix}menu <category>`, thumbnail: thumb, mediaType: 1, renderLargerThumbnail: true, showAdAttribution: false, sourceUrl: config.USER_CHANNEL_URL || undefined } } : {};
     try {
-        if (hasPoster) {
-            // poster image + stats card as its caption, then every category right under it
-            await socket.sendMessage(from, { image: fs.readFileSync(config.MENU_IMAGE), caption: header, contextInfo: { ...fwd } }, { quoted: fakeCard });
-            for (const part of UI.chunkSections(secs, 3600)) { await socket.sendMessage(from, { text: part }, { quoted: fakeCard }); await delay(300); }
-            await socket.sendMessage(from, { text: footer }, { quoted: fakeCard });
-        } else {
-            await socket.sendMessage(from, { text: header + '\n\n' + body, contextInfo: { ...fwd } }, { quoted: fakeCard });
-        }
+        await socket.sendMessage(from, { text: full, contextInfo: { ...fwd, ...card } }, { quoted: fakeCard });
     } catch (e) {
-        console.error('[MENU]', e.message);
-        try { await socket.sendMessage(from, { text: header + '\n\n' + body }, { quoted: fakeCard }); } catch (e2) { console.error('[MENU plain]', e2.message); }
+        console.error('[MENU one-message]', e.message);
+        try { await socket.sendMessage(from, { text: full }, { quoted: fakeCard }); } catch (e2) { console.error('[MENU plain]', e2.message); }
     }
     break;
 }
