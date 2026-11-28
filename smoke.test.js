@@ -8,7 +8,7 @@ let fails = 0;
 const ok = (c, m) => { if (!c) { fails++; console.log('FAIL', m); } };
 
 // 1. every local module loads and every `const { a, b } = require('./x')` name exists
-const files = fs.readdirSync(__dirname).filter(f => /\.js$/.test(f) && !/test\.js$|^index\.js$|^apicheck\.js$/.test(f));
+const files = fs.readdirSync(__dirname).filter(f => /\.js$/.test(f) && !/test\.js$|^(index|bot)\.js$|^apicheck\.js$/.test(f));
 let hasExpress = true; try { require.resolve('express'); } catch { hasExpress = false; }
 for (const f of files) {
   if (f === 'server.js' && !hasExpress) continue;

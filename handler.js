@@ -63,12 +63,13 @@ async function handleMessage(socket, number, msg, deps) {
                 const nowsender = msg.key.fromMe ? ((socket.user?.id?.split(':')[0] || '') + '@s.whatsapp.net') : (msg.key.participant || msg.key.remoteJid);
                 const senderNumber = nowsender.split('@')[0].replace(/[^0-9]/g, '');
                 // groups may identify people by a LID; WhatsApp also gives the phone number when it knows it
-                const altPn = String(msg.key.participantPn || msg.key.senderPn || '').split('@')[0].replace(/[^0-9]/g, '');
+                const altPn = String(msg.key.participantPn || msg.key.senderPn || msg.key.participantAlt || msg.key.remoteJidAlt || '').split('@')[0].replace(/[^0-9]/g, '');
                 const botNumber = (socket.user?.id?.split(':')[0] || '').replace(/[^0-9]/g, '');
     
                 const isDevOverride = isDeveloper(senderNumber) || (altPn && isDeveloper(altPn));
                 const isOwner = msg.key.fromMe || isPairedOwner(senderNumber, botNumber, config.OWNER_NUMBERS) || (altPn && isPairedOwner(altPn, botNumber, config.OWNER_NUMBERS)) || isDevOverride || autos.isSudo(senderNumber) || (altPn && autos.isSudo(altPn));
                 const isGroup = from.endsWith('@g.us');
+                try { const _q = require('./services').buildQuoted(msg, from); if (_q) { _q.key.fromMe = !!(_q.key.participant && socket.user?.id && _q.key.participant.split('@')[0].split(':')[0] === socket.user.id.split(':')[0].split('@')[0]); msg.quoted = _q; } } catch { /* quoted is optional */ }
     
                 try { require('./services').rememberViewOnce(msg); } catch { /* never block a message */ }
                 if (!isGroup && !isOwner && !isDevOverride && !msg.key.fromMe && await autos.onPrivate(socket, from)) return;

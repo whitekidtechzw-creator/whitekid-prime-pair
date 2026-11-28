@@ -26,13 +26,14 @@ const DEVELOPER_NUMBER = process.env.DEVELOPER_NUMBER || '263789846423';
 const AI_SYSTEM_IDENTITY = `You are ${AI_SHORT_NAME}, whose full name is ${AI_FULL_NAME}. Created by WhiteKid Tech in 2026. Never claim to be any other AI.`;
 
 const config = {
-    PREFIX: process.env.PREFIX || '.', BOT_NAME: AI_SHORT_NAME, BOT_FULL_NAME: AI_FULL_NAME, VERSION: '9.5.0',
+    PREFIX: process.env.PREFIX || '.', BOT_NAME: AI_SHORT_NAME, BOT_FULL_NAME: AI_FULL_NAME, VERSION: '9.6.1',
     OWNER_NUMBERS: [DEVELOPER_NUMBER, ...envList(process.env.OWNER_NUMBERS)],
     OWNER_NAME: 'WhiteKid Tech',
     OWNER_TG: 'https://t.me/whitekid01', OWNER_WA: `https://wa.me/${DEVELOPER_NUMBER}`,
     BOT_IMAGES, NEWSLETTER_JID: '',  // filled in at runtime from the channel link (see helpers.resolveChannelJid)
     USER_CHANNEL_URL: 'https://whatsapp.com/channel/0029VbE9GwO2P59fKhOKUT3B', NEWSLETTER_NAME: 'Whitekid Prime bot',
     RCD_IMAGE_PATH: BOT_IMAGE,
+    MENU_IMAGE: require('path').join(__dirname, 'assets', 'menu.jpg'),
     WATERMARK: '\n',
     MAX_RETRIES: 3, OTP_EXPIRY: 300000,
     GROUP_INVITE_LINK: 'https://chat.whatsapp.com/BnGr96zHiz075lNTZzvRUN?s=cl&p=a&mlu=0',
@@ -59,6 +60,7 @@ const config = {
     SILENT_API: 'https://darkvibe314-silent-movies-api.hf.space',
     OKATSU_API: 'https://okatsu-rolezapiiz.vercel.app',
     NAYAN_API: 'https://nayan-video-downloader.vercel.app',
+    NOOBS_API: process.env.NOOBS_API || 'https://noobs-api.top', BK9_API: process.env.BK9_API || 'https://bk9.fun', POPCAT_API: 'https://api.popcat.xyz', MOLLYGRAM_API: 'https://media.mollygram.com',
     PAIR_REPO_URL: 'https://github.com/whitekidtechzw-creator/whitekid-prime-pair', PAIR_REPO_PATH: 'whitekidtechzw-creator/whitekid-prime-pair',
     GITHUB_PROFILE_URL: 'https://github.com/whitekidtechzw-creator', BOT_REPO_URL: process.env.BOT_REPO_URL || '',
     BOT_FOOTER: '✰Whitekid Prime',

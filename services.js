@@ -660,21 +660,35 @@ function findViewOnce(m, wrapped = false, depth = 0) {
     }
     return null;
 }
+const VO_MAX_BYTES = 25 * 1024 * 1024, VO_MAX_TOTAL = 80 * 1024 * 1024;
+function voTotal() { let t = 0; for (const e of VO_CACHE.values()) t += e.buf ? e.buf.length : 0; return t; }
+// Remember a view-once message AND download its media right away: once the receiver opens it on the phone the
+// media can disappear from WhatsApp's servers, so waiting for .vv is often too late.
 function rememberViewOnce(message) {
     const id = message && message.key && message.key.id; if (!id) return;
     const f = findViewOnce(message.message); if (!f) return;
-    VO_CACHE.set(id, f); while (VO_CACHE.size > 200) VO_CACHE.delete(VO_CACHE.keys().next().value);
+    const entry = { ...f, buf: null, at: Date.now() };
+    VO_CACHE.set(id, entry);
+    while (VO_CACHE.size > 200) VO_CACHE.delete(VO_CACHE.keys().next().value);
+    const size = Number(f.obj && f.obj.fileLength) || 0;
+    if (size > VO_MAX_BYTES) return;
+    Promise.resolve().then(() => voApi.download(f.obj, f.kind)).then((buf) => {
+        if (!buf || !buf.length || !VO_CACHE.has(id)) return;
+        entry.buf = buf;
+        for (const [k, e] of VO_CACHE) { if (voTotal() <= VO_MAX_TOTAL) break; if (k !== id && e.buf) e.buf = null; }
+    }).catch(() => { /* will retry when .vv is used */ });
 }
+
 /** Reveals the view-once media the command replies to. toJid = where to send it (default: the same chat). Returns true when something was sent. */
 async function viewonceCommand(sock, chatId, message, fakeCard, toJid) {
     const m = message.message || {};
     const ctx = (m.extendedTextMessage || m.imageMessage || m.videoMessage || m.audioMessage || m.conversation && {} || {}).contextInfo || {};
-    const candidates = [findViewOnce(ctx.quotedMessage), ctx.stanzaId && VO_CACHE.get(ctx.stanzaId), findViewOnce(m)].filter(Boolean);
+    const candidates = [ctx.stanzaId && VO_CACHE.get(ctx.stanzaId), findViewOnce(ctx.quotedMessage), findViewOnce(m)].filter(Boolean);
     if (!candidates.length) { await sock.sendMessage(chatId, { text: '⚠️ Reply to a view-once photo, video or voice note with this command.' }, { quoted: message }); return false; }
     let lastErr = null;
-    for (const { kind, obj } of candidates) {
+    for (const { kind, obj, buf } of candidates) {
         try {
-            const buffer = await voApi.download(obj, kind);
+            let buffer = buf; if (!buffer || !buffer.length) buffer = await voApi.download(obj, kind);
             if (!buffer || !buffer.length) throw new Error('empty media');
             const dest = toJid || chatId, opts = { quoted: fakeCard || message };
             if (kind === 'image') await sock.sendMessage(dest, { image: buffer, caption: obj.caption || '✨ Revealed image' }, opts);
@@ -685,6 +699,36 @@ async function viewonceCommand(sock, chatId, message, fakeCard, toJid) {
     }
     await sock.sendMessage(chatId, { text: `⚠️ Could not open that view-once (${(lastErr && lastErr.message) || 'unknown error'}). It was probably already opened on the phone or has expired — reply to it before it is opened.` }, { quoted: message });
     return false;
+}
+
+
+// ───── QUOTED MESSAGE + MEDIA HELPERS ─────
+// Baileys does not give commands a ready-made "quoted" message, so build one from the reply's contextInfo.
+function getContextInfo(message) {
+    const m = message || {};
+    for (const k of Object.keys(m)) { const v = m[k]; if (v && typeof v === 'object' && v.contextInfo) return v.contextInfo; }
+    for (const w of ['ephemeralMessage', 'viewOnceMessage', 'viewOnceMessageV2', 'documentWithCaptionMessage']) if (m[w] && m[w].message) { const r = getContextInfo(m[w].message); if (r) return r; }
+    return null;
+}
+function buildQuoted(msg, chatId) {
+    const ci = getContextInfo(msg && msg.message);
+    if (!ci || !ci.quotedMessage) return null;
+    const participant = ci.participant || (chatId && !String(chatId).endsWith('@g.us') ? chatId : undefined);
+    return { key: { remoteJid: chatId, id: ci.stanzaId, participant, fromMe: false }, message: ci.quotedMessage, sender: participant, stanzaId: ci.stanzaId };
+}
+// First downloadable media (image / video / audio / sticker / document) inside any WhatsApp wrapper.
+function findMedia(m, depth = 0) {
+    if (!m || typeof m !== 'object' || depth > 6) return null;
+    for (const k of ['image', 'video', 'audio', 'sticker', 'document']) if (m[k + 'Message']) return { kind: k, obj: m[k + 'Message'] };
+    for (const w of ['viewOnceMessage', 'viewOnceMessageV2', 'viewOnceMessageV2Extension', 'ephemeralMessage', 'documentWithCaptionMessage']) if (m[w] && m[w].message) { const r = findMedia(m[w].message, depth + 1); if (r) return r; }
+    return null;
+}
+function findText(m, depth = 0) {
+    if (!m || typeof m !== 'object' || depth > 6) return '';
+    if (m.conversation) return m.conversation;
+    if (m.extendedTextMessage && m.extendedTextMessage.text) return m.extendedTextMessage.text;
+    for (const w of ['ephemeralMessage', 'viewOnceMessage', 'viewOnceMessageV2']) if (m[w] && m[w].message) { const r = findText(m[w].message, depth + 1); if (r) return r; }
+    return '';
 }
 
 function collectApiTargets() {
@@ -704,4 +748,4 @@ function collectApiTargets() {
     return out;
 }
 
-module.exports = { findViewOnce, rememberViewOnce, voApi, audioCandidates, extractAudioUrl, LEAGUE_IDS, PAXSENIX, TelegraPh, UploadFileUgu, aioDownload, askGrok, collectApiTargets, downloadMovieFile, espnScoreboard, formatAudio, fromBuffer, generateImage, getCurrentDateTime, getLyrics, getUserLocation, isValidBuffer, localYtAudio, localYtVideo, mediafireDl, ossBuffer, paxMemes, paxQuotes, paxShazam, paxTempMailBody, paxTempMailCreate, paxTempMailInbox, paxVideoJob, queryAudioEndpoints, searchMovies, sendVoiceReply, showSubtitleOptions, sportsdbSearch, transcribeAudio, uploadAudioToCatbox, uploadSmartMedia, uploadToCatbox, uploadToTelegraph, viewonceCommand, webp2mp4File, ytDownloadMp4, ytGetInfo };
+module.exports = { buildQuoted, findMedia, findText, getContextInfo, findViewOnce, rememberViewOnce, voApi, audioCandidates, extractAudioUrl, LEAGUE_IDS, PAXSENIX, TelegraPh, UploadFileUgu, aioDownload, askGrok, collectApiTargets, downloadMovieFile, espnScoreboard, formatAudio, fromBuffer, generateImage, getCurrentDateTime, getLyrics, getUserLocation, isValidBuffer, localYtAudio, localYtVideo, mediafireDl, ossBuffer, paxMemes, paxQuotes, paxShazam, paxTempMailBody, paxTempMailCreate, paxTempMailInbox, paxVideoJob, queryAudioEndpoints, searchMovies, sendVoiceReply, showSubtitleOptions, sportsdbSearch, transcribeAudio, uploadAudioToCatbox, uploadSmartMedia, uploadToCatbox, uploadToTelegraph, viewonceCommand, webp2mp4File, ytDownloadMp4, ytGetInfo };

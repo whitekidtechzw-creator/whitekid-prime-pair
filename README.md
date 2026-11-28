@@ -1,469 +1,275 @@
 <div align="center">
 
-# ⚡ WHITEKID PRIME
+<img src="assets/whitekid-prime.jpg" width="130" alt="Whitekid Prime" />
 
-### THE NEXT GENERATION OF WHATSAPP AUTOMATION
+# WHITEKID PRIME
 
-**Powerful. Intelligent. Expandable. Multi-Device.**
+**A multi-device WhatsApp bot with 950+ commands, a web pairing page and an optional Telegram pairing bot.**
 
-[![Version](https://img.shields.io/badge/Version-9.5.0-blue?style=for-the-badge)](https://github.com/whitekidtechzw-creator/whitekid-prime-pair)
-[![Node](https://img.shields.io/badge/Node.js-18--24-green?style=for-the-badge&logo=node.js)](https://nodejs.org/)
-[![License](https://img.shields.io/badge/License-Apache%202.0-orange?style=for-the-badge)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-WhatsApp-25D366?style=for-the-badge&logo=whatsapp)](https://whatsapp.com/)
-
-**Developed with passion by WHITEKID TECHZW 🇿🇼**
-
-[🌐 Live Pairing Website](https://whitekid-prime-pair-7a7k.onrender.com) • [💻 GitHub Repository](https://github.com/whitekidtechzw-creator/whitekid-prime-pair)
+`v9.6.1` · Node.js 18–24 · Baileys multi-device · by **WhiteKid Tech**
 
 </div>
 
 ---
 
-## 🚀 ABOUT WHITEKID PRIME
-
-**WHITEKID PRIME** is a powerful WhatsApp Multi-Device automation project engineered to deliver an advanced messaging experience.
-
-Built by **WhiteKid TechZW**, this project combines intelligent AI capabilities, powerful automation systems, multimedia downloading, group management, entertainment, utilities and an expandable command architecture.
-
-Unlike ordinary WhatsApp bots, WHITEKID PRIME brings together multiple command systems, a dedicated web pairing interface and optional Telegram integration.
-
-Our mission is simple:
-
-> Build technology that pushes beyond ordinary limits. The future had already come.
+## Contents
+1. [Features](#features)
+2. [Quick start](#quick-start)
+3. [Configuration](#configuration)
+4. [Using the bot](#using-the-bot)
+5. [The menu](#the-menu)
+6. [Group tools and automations](#group-tools-and-automations)
+7. [Owner and sudo](#owner-and-sudo)
+8. [Deploying](#deploying)
+9. [Web pairing page and HTTP routes](#web-pairing-page-and-http-routes)
+10. [Project layout](#project-layout)
+11. [Tests and health checks](#tests-and-health-checks)
+12. [Troubleshooting](#troubleshooting)
+13. [Safety notes](#safety-notes)
+14. [Credits and licence](#credits-and-licence)
+15. [Changelog](#changelog)
 
 ---
 
-## ✨ CORE FEATURES
+## Features
 
-| Feature | Description |
+| | |
 |---|---|
-| 🤖 AI Intelligence | Multiple AI engines and intelligent assistants |
-| 📱 Multi-Device | Connect WhatsApp accounts using pairing codes |
-| 🌐 Web Pairing | Dedicated online number-pairing interface |
-| 📥 Download Engine | Download multimedia from supported platforms |
-| 🎨 AI Studio | Image generation, effects and creative tools |
-| 🎵 Music System | Search and download music |
-| 🛡️ Group Protection | Advanced group administration and moderation |
-| 🎮 Entertainment | Games, quizzes, jokes and interactive commands |
-| ⚙️ Automation | Automatic reactions, welcome messages and more |
-| 🔄 Auto Reconnection | Restore saved WhatsApp sessions |
-| 📡 Telegram Integration | Optional Telegram pairing bot |
-| 🧰 Developer Tools | Utilities, converters, QR generation and more |
-| 🔐 Security | Pairing validation, rate limiting and protected admin routes |
-| ♻️ Auto Updates | GitHub-based updates with rollback support |
+| 📥 **Downloads** | Music and video from YouTube (`.play`, `.song`, `.video`), TikTok, Instagram, Facebook, X, Spotify, SoundCloud, MediaFire, Mega, GitHub, APKs and more, with several fallback sources. |
+| 🤖 **AI** | `.ai`, ChatGPT, Claude, Gemini, Copilot, DeepSeek, Llama, Mistral, Qwen, Grok and task helpers (code, translate, summary, recipe, poem…). Every answer shows which engine produced it. |
+| 🎨 **AI studio and logos** | Image generation, vision, text-to-video, 35+ text-logo styles, image effects. |
+| 🧰 **Tools** | Stickers, converters, text-to-speech in 20+ languages, QR codes, OCR, background removal, screenshots, URL shorteners, translators, schedulers. |
+| 🛡️ **Group management** | Add/kick/promote, tag all, antilink, welcome/goodbye, warnings, plus anti-badword, anti-tag and top members. |
+| 🎮 **Games and fun** | Tic-tac-toe, trivia, hangman, blackjack, quizzes, truth or dare, text fun, jokes, memes, reactions. |
+| ⚽ **Sports and search** | Live scores, standings, weather, wiki, news, crypto, movies, Bible, Quran, stalk tools. |
+| 🌐 **Web pairing** | A page where anyone can link their number with a pairing code, validated and rate-limited. |
+| ♻️ **Reliable** | One connection path, reconnect with backoff, sessions kept on disk, bounded caches, 10 test suites that need no network. |
 
 ---
 
-## 🧠 AI INTELLIGENCE
-
-WHITEKID PRIME integrates multiple AI providers to deliver intelligent assistance.
-
-Supported integrations include:
-
-- ChatGPT
-- Google Gemini
-- Claude
-- DeepSeek
-- Grok
-- Microsoft Copilot
-- Llama
-- Mistral
-- Qwen
-
-AI capabilities include:
-
-- Intelligent conversations.
-- Code generation.
-- Text translation.
-- Summarization.
-- Creative writing.
-- Recipe generation.
-- AI-powered assistance.
-- Image and creative generation integrations.
-
-AI availability depends on configured API providers.
-
----
-
-## 📥 ADVANCED DOWNLOAD SYSTEM
-
-Access multimedia downloading tools from supported platforms.
-
-Supported integrations include:
-
-- YouTube
-- TikTok
-- Instagram
-- Facebook
-- X
-- Spotify
-- SoundCloud
-- MediaFire
-- Mega
-- GitHub
-- APK sources
-
-Additional download sources and fallback integrations help improve reliability.
-
----
-
-## 🛡️ GROUP MANAGEMENT
-
-Take control of your WhatsApp groups.
-
-Available administration features include:
-
-- Anti-link protection.
-- Anti-badword protection.
-- Anti-tag protection.
-- Welcome messages.
-- Goodbye messages.
-- Member management.
-- Group information.
-- Group description management.
-- Warning systems.
-- Top members.
-- Automated group moderation.
-
-Some operations require the bot to have group administrator privileges.
-
----
-
-## 🎮 ENTERTAINMENT & FUN
-
-Keep conversations entertaining with:
-
-- Tic-Tac-Toe.
-- Trivia.
-- Hangman.
-- Blackjack.
-- Quizzes.
-- Truth or Dare.
-- Jokes.
-- Memes.
-- Reactions.
-- Text transformations.
-- Interactive games.
-
----
-
-## 🌐 WEB PAIRING SYSTEM
-
-WHITEKID PRIME includes a dedicated web interface for connecting WhatsApp accounts.
-
-**Live pairing platform:**
-
-https://whitekid-prime-pair-7a7k.onrender.com
-
-### How to connect
-
-1. Open the WHITEKID PRIME pairing website.
-2. Enter your WhatsApp number with the country code.
-3. Request your pairing code.
-4. Open WhatsApp.
-5. Navigate to Settings → Linked Devices.
-6. Select Link a Device.
-7. Choose Link with phone number instead.
-8. Enter the pairing code.
-
-Your WhatsApp account can now connect to WHITEKID PRIME.
-
-**Important:** Never share your pairing code or WhatsApp session credentials with anyone.
-
----
-
-## 📲 TELEGRAM PAIRING INTEGRATION
-
-WHITEKID PRIME also supports an optional Telegram pairing bot.
-
-When configured with `TG_TOKEN`, the Telegram integration provides an additional pairing interface.
-
-The Telegram integration is optional and disabled when its token is not configured.
-
----
-
-## ⚡ QUICK INSTALLATION
-
-### Requirements
-
-- Node.js 18–24.
-- npm.
-- FFmpeg for audio and video processing.
-- A spare WhatsApp account.
-- API keys for optional integrations.
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/whitekidtechzw-creator/whitekid-prime-pair.git
-```
-
-### 2. Enter the project directory
-
-```bash
-cd whitekid-prime-pair
-```
-
-### 3. Install dependencies
+## Quick start
 
 ```bash
 npm install
+cp .env.example .env      # then edit .env
+npm start                 # opens on http://localhost:3000
 ```
 
-### 4. Configure environment variables
+Requirements
+- **Node.js 18 or newer** (works up to 24).
+- **ffmpeg** on the machine for audio/video commands (or set `FFMPEG_PATH`).
+- A **spare WhatsApp number** (see [Safety notes](#safety-notes)).
 
-```bash
-cp .env.example .env
-```
-
-Edit your `.env` file and configure the required settings.
-
-### 5. Start WHITEKID PRIME
-
-```bash
-npm start
-```
-
-The web pairing interface will be available at:
-
-```text
-http://localhost:3000
-```
+Link a number: open the web page, enter the number with its country code, then in WhatsApp go to *Settings → Linked devices → Link a device → Link with phone number instead* and type the code. You can also send `.pair +263xxxxxxxxx` to a bot that is already running.
 
 ---
 
-## ☁️ DEPLOYMENT
+## Configuration
 
-WHITEKID PRIME can run on Node.js-compatible hosting platforms.
+Everything is read from `.env` (or your host's dashboard). Copy `.env.example` as a starting point and **never commit real values**.
 
-### Recommended deployment platforms
+| Variable | Default | What it does |
+|---|---|---|
+| `PORT` | `3000` | Web server port. |
+| `DATA_DIR` | `./data` | Where sessions and settings live. **Point this at a persistent disk on a host**, or every redeploy logs everyone out. |
+| `PREFIX` | `.` | Command prefix. Owners can change it live with `.setprefix`. |
+| `DEVELOPER_NUMBER` | built-in | Always an owner. Digits only. |
+| `OWNER_NUMBERS` | – | Extra owners, comma separated, digits only. |
+| `ADMIN_TOKEN` | – | Protects `/reconnect` and `/connect-all` (send it as the `x-admin-token` header). Empty disables those routes. |
+| `AUTO_JOIN` | `true` | Auto-join the Whitekid group and channel when a number is first paired. |
+| `BOT_FONT` | `small` | `small` = ᴛɪɴʏ ꜱᴍᴀʟʟ ᴄᴀᴘꜱ on every message and in the menu, `bold` = bold labels only, `none` = off. |
+| `AI_API_KEY`, `AI_BASE_URL`, `AI_MODEL` | – | Any OpenAI-compatible service. **Recommended**: gives the most reliable AI answers. Without it free public endpoints are used. |
+| `TG_TOKEN` | – | Turns on the Telegram pairing bot. |
+| `PAXSENIX_API_KEY`, `NEWS_API_KEY`, `TMDB_API_KEY`, `OPENWEATHER_KEY`, `TENOR_API_KEY`, `KNIGHT_API_KEY` | – | Optional keys for news, movies, weather, GIFs/emojimix and the Knight download sources. A feature without its key stays off or falls back. |
+| `BOT_REPO_URL` | – | Added to the `.repo` reply. |
+| `MESSAGE_STORE_MAX` | `2000` | Size of the antidelete cache. |
+| `MAX_RECONNECTS` | `8` | Fast reconnect attempts before switching to one try every 5 minutes. |
+| `LOG_LEVEL` | `silent` | Baileys log level. |
+| `WA_LIB` | – | Switch the WhatsApp library, e.g. `@whiskeysockets/baileys`. |
+| `RENDER_KEEP_ALIVE_URL` | – | Self-ping URL (Render sets `RENDER_EXTERNAL_URL` itself). |
 
-- [Render](https://render.com/)
-- [Railway](https://railway.com/)
-- [Koyeb](https://www.koyeb.com/)
-- VPS hosting with PM2.
+---
 
-### Render configuration
+## Using the bot
 
-| Setting | Value |
+Commands start with the prefix (`.` by default).
+
+| Command | What it does |
 |---|---|
-| Runtime | Node.js |
-| Build Command | `npm install` |
-| Start Command | `npm start` |
-| Persistent Storage | Recommended |
-| Environment | Configure `.env` variables |
+| `.menu` | The full menu as one message. |
+| `.menu downloads` | One category only (a prefix is enough: `.menu down`). |
+| `.play <song>` | Search YouTube, show a track card and send the audio. |
+| `.ai <question>` | Ask the AI. |
+| `.sticker` | Reply to an image or video to make a sticker. |
+| `.repo` | Source and pairing repo links. |
+| `.alive` · `.ping` | Check that the bot is running. |
+| `.pair +number` | Get a pairing code for another number. |
+| `.vv` | Reply to a view-once photo, video or voice note to reveal it (`.vv2` sends it to your own chat; owner only). |
 
-**Important:** Configure persistent storage and set `DATA_DIR` appropriately. Without persistent storage, WhatsApp sessions may be lost after redeployment.
+The bot starts in **private** mode (only the owner can use it in private chats; groups always work). Owners switch with `.mode public` or `.mode private`.
 
 ---
 
-## ⚙️ ENVIRONMENT CONFIGURATION
+## The menu
 
-WHITEKID PRIME supports configurable environment variables.
+`.menu` sends the stats card and **every category in a single message**. Command names are shown in small caps (people still type them normally). Commands from the extra packs sit in the section where they belong, for example the YouTube tools are inside **Downloads**.
 
-| Variable | Purpose |
+| Section | Contents |
 |---|---|
-| `PORT` | Web server port |
-| `DATA_DIR` | Session and data storage |
-| `PREFIX` | Bot command prefix |
-| `DEVELOPER_NUMBER` | Developer number |
-| `OWNER_NUMBERS` | Additional owners |
-| `ADMIN_TOKEN` | Protected administrative routes |
-| `AI_API_KEY` | AI provider authentication |
-| `AI_BASE_URL` | AI provider endpoint |
-| `AI_MODEL` | Selected AI model |
-| `TG_TOKEN` | Telegram integration |
-| `BOT_FONT` | Message font configuration |
-| `BOT_REPO_URL` | Repository information |
-| `UPDATE_REPO` | Automatic update repository |
-| `GITHUB_TOKEN` | Optional private repository access |
-| `FFMPEG_PATH` | FFmpeg executable location |
+| 🌐 NEXUS · 💬 QUOTES | Prime store, seasonal quotes. |
+| ⚙️ GENERAL | Alive, ping, settings, bot info, pairing, calculator, help. |
+| 🤖 AI CHAT · 🎨 AI STUDIO | Chat models, writing helpers, image/video/music generation. |
+| 📥 DOWNLOADS | YouTube, TikTok, Instagram, Facebook, X, Spotify, SoundCloud, Mega, GitHub, APK, lyrics. |
+| 🔎 SEARCH | Weather, wiki, news, crypto, movies, Bible, Quran, live data, offline knowledge. |
+| 🎭 FUN · 🎲 FUN PACK · 🔤 TEXT FUN | Jokes, reactions, ship/rate/fortune, text transforms. |
+| 🖼️ IMAGES · 🐉 ANIME | Pictures, wallpapers, image effects, anime search and pies. |
+| 🧰 TOOLS · 🧮 UTILITIES | Stickers, converters, text-to-speech, QR, OCR, math, dates, generators. |
+| 🛡️ GROUP ADMIN · 👑 OWNER | Group management and owner settings. |
+| ⚽ SPORTS · 📧 TEMP MAIL · ✒️ LOGO MAKER · 🎮 GAMES | Scores, disposable mail, 35+ logo styles, games. |
 
-Additional optional API integrations are documented in `.env.example` and `APIS.md`.
-
-**Never publish your API keys, tokens or WhatsApp sessions.**
+**Editing the menu:** change `menudata.js` (core layout) or the `PACK_TO_SECTION` map in `ui.js` (where the pack commands go). `ui.test.js` fails if a menu entry has no handler or a command is listed twice.
 
 ---
 
-## 💻 COMMAND EXAMPLES
+## Group tools and automations
 
-The default command prefix is `.`.
+Settings are saved in `data/autos.json`. The bot must be a **group admin** for anything that deletes messages or edits the group. Admins and owners are never affected by the filters.
 
-| Command | Description |
+| Command | Who | What it does |
+|---|---|---|
+| `.antilink` | admin | Remove links from non-admins. |
+| `.antibadword on/off/add/remove/list` | admin | Delete messages containing blocked words (whole words only). |
+| `.antitag on/off` | admin | Delete messages that tag 5+ people or use `@everyone`. |
+| `.welcome` · `.goodbye` | admin | Greeting messages. |
+| `.topmembers` | anyone | Most active members (counted from when v9.3 was installed). |
+| `.setgdesc` · `.anularlink` · `.infogp` | admin / anyone | Set description, reset invite link, group info. |
+| `.chatbot on/off` | admin (groups) / owner (DMs) | AI replies; in groups only when someone replies to or @mentions the bot. |
+| `.anticall` · `.pmblocker` · `.autoreact` · `.autotyping` | owner | Reject calls, block private messages, react to messages, show "typing…". |
+
+---
+
+## Owner and sudo
+
+- Owners are `DEVELOPER_NUMBER`, `OWNER_NUMBERS`, the paired number itself and anyone added with `.sudo`.
+- `.sudo add @user` / `.sudo del @user` / `.sudo list` (aliases `.addmod`, `.delmod`). **Sudo users get owner-level commands, so only add people you fully trust.**
+- `.owners` lists everyone. `.ban` / `.unban`, `.mode`, `.setprefix`, `.antidelete`, `.autoread`, `.autostatus`, `.clearsession` (empties temp files only) and more are owner commands.
+- `.apicheck` tests every API the bot depends on and reports which are down.
+
+---
+
+## Deploying
+
+The bot is one Node process with an HTTP server, so any Node host works.
+
+**Render / Railway / Koyeb / Heroku-style hosts**
+1. Create a web service from this repo, build command `npm install`, start command `npm start`.
+2. Add the variables from [Configuration](#configuration) in the dashboard.
+3. Attach a **persistent disk** and set `DATA_DIR` to its path.
+4. On Render the bot pings itself every 10 minutes to stay awake. Other hosts: set `RENDER_KEEP_ALIVE_URL` or point an uptime monitor at `/ping`.
+
+**Auto-update from GitHub (no re-pairing)**
+Set `UPDATE_REPO=owner/repo` (and `UPDATE_BRANCH`, `GITHUB_TOKEN` for a private repo). Every few minutes the bot checks GitHub, downloads changed files, syntax-checks them, keeps `data/`, `.env` and all sessions, installs new packages if `package.json` changed, then restarts itself in a few seconds. Linked numbers reconnect from disk. A bad push is rejected, and a version that crashes right after an update is rolled back automatically. Owners can run `.update`, `.update force` or `.update status`.
+For this to work, **turn off your host's "auto-deploy on push"** (a redeploy replaces the whole disk, which is what logs everyone out), or keep `DATA_DIR` on a persistent disk.
+
+**VPS with pm2**
+```bash
+npm install
+pm2 start index.js --name whitekid-prime
+pm2 save
+```
+
+`npm run check` syntax-checks the main files. Sessions stay on disk when the process stops, so a restart reconnects every linked number automatically.
+
+---
+
+## Web pairing page and HTTP routes
+
+| Route | Purpose |
 |---|---|
-| `.menu` | Display the complete command menu |
-| `.menu downloads` | Display download commands |
-| `.alive` | Check bot status |
-| `.ping` | Check response speed |
-| `.ai hello` | Chat with AI |
-| `.play song name` | Search and play music |
-| `.sticker` | Create a sticker |
-| `.pair +263xxxxxxxxx` | Request a pairing code |
-| `.repo` | Display repository information |
-| `.apicheck` | Check external API availability |
-| `.update` | Update the bot |
-| `.update status` | Check update status |
+| `/` | Pairing page (`main.html`). `/?number=…` requests a code (rate-limited). |
+| `/status?number=…` | `{ connected: true/false }` for a number. |
+| `/active` | Count and masked list of connected numbers. |
+| `/ping` · `/health` | Keep-alive and health checks (bot name, version, active sessions). |
+| `/reconnect` · `/connect-all` | Reconnect saved sessions. **Need `ADMIN_TOKEN`.** |
 
 ---
 
-## 🏗️ PROJECT ARCHITECTURE
+## Project layout
 
-WHITEKID PRIME uses a modular JavaScript architecture.
+Flat on purpose, no sub-folders.
 
-```text
-WHITEKID-PRIME-PAIR/
-│
-├── assets/
-├── .github/
-├── .env.example
-│
-├── index.js
-├── bot.js
-├── server.js
-├── main.html
-│
-├── commands.js
-├── handler.js
-├── manager.js
-├── config.js
-│
-├── ai.js
-├── music.js
-├── services.js
-├── telegram.js
-│
-├── games.js
-├── events.js
-├── autos.js
-│
-├── wk7.js
-├── wk7-core.js
-├── wk7-fun.js
-├── wk7-info.js
-├── wk7-math.js
-├── wk7-net.js
-├── wk7-text.js
-│
-├── wk8.js
-├── wk9.js
-├── wk10.js
-│
-├── ui.js
-├── menudata.js
-├── helpers.js
-├── store.js
-├── supervisor.js
-├── updater.js
-│
-├── pairguard.js
-├── keepalive.js
-├── APIS.md
-├── package.json
-└── LICENSE
-```
-
-The architecture separates pairing, messaging, command handling, automation, integrations and user-interface components.
+| File | Job |
+|---|---|
+| `index.js` | Start-up, keep-alive, graceful shutdown. |
+| `server.js`, `pairguard.js`, `main.html` | Web routes, number validation and rate limit, pairing page. |
+| `manager.js` | Every WhatsApp connection: pairing, reconnect with backoff, logout, restore. |
+| `handler.js` | Turns WhatsApp events into command calls and runs the automation hooks. |
+| `commands.js` | Core commands (one big `switch`). |
+| `games.js` | Games and fun pack. |
+| `wk7*.js`, `wk8.js`, `wk9.js`, `wk10.js` | Command packs: v7 toolkit, v8 downloaders/converters/groups, v9 Knightbot pack, v10 Knight/Atlas extras. |
+| `autos.js` | Anti-badword, anti-tag, anti-call, PM blocker, auto-react, auto-typing, chatbot, sudo, top members. |
+| `ai.js`, `music.js`, `services.js` | AI engine with provider fallback, `.play` engine, API hub. |
+| `events.js` | Antidelete, welcome/goodbye, antilink, scheduler, tic-tac-toe. |
+| `ui.js`, `menudata.js` | Bot font, reply card, menu layout. |
+| `helpers.js`, `store.js`, `config.js` | Text styling and buttons, settings on disk, configuration. |
+| `deps.js`, `wa.js` | Library loading (missing optional libraries never crash the bot). |
+| `telegram.js` | Optional Telegram pairing bot (off unless `TG_TOKEN` is set). |
+| `APIS.md` | Every external API the bot uses. |
 
 ---
 
-## 🧪 TESTING & RELIABILITY
-
-The project includes automated tests for important components.
-
-Run the test suite:
+## Tests and health checks
 
 ```bash
-npm test
+npm test          # guard, page, wk7, wk8, wk9, wk10, autos, viewonce, ui, smoke
+npm run check     # syntax check of the main files
+npm run apicheck  # probe the external APIs (or use .apicheck in WhatsApp)
 ```
 
-Check JavaScript syntax:
-
-```bash
-npm run check
-```
-
-Check API availability:
-
-```bash
-npm run apicheck
-```
-
-The tests use mocks and do not require a live WhatsApp connection.
+The tests need no network and no WhatsApp: they use mocks. `wk7.test.js` alone runs more than 2,000 checks.
 
 ---
 
-## 🔒 SECURITY & RESPONSIBLE USAGE
+## Troubleshooting
 
-Security matters.
-
-- Use a spare WhatsApp number for testing.
-- Never expose your `.env` file.
-- Keep session folders private.
-- Protect your administrative token.
-- Only grant sudo privileges to trusted users.
-- Do not share pairing codes or authentication credentials.
-- Respect WhatsApp policies and the privacy of other users.
-
-WHITEKID PRIME is provided for educational, development and personal automation purposes.
-
----
-
-## 📜 LICENSE
-
-This project is distributed under the **Apache License 2.0**.
-
-See the [LICENSE](LICENSE) file for details.
+| Problem | Try this |
+|---|---|
+| Everyone gets logged out after a redeploy | `DATA_DIR` is not on a persistent disk. |
+| No pairing code | The number must have WhatsApp, include the country code and not already be linked. Wait a minute and retry (the page is rate-limited). |
+| A command says the service did not respond | A free API is down. Run `.apicheck`; for AI set `AI_API_KEY`. |
+| Audio/video converters fail | Install ffmpeg or set `FFMPEG_PATH`. |
+| Bot stops answering after a WhatsApp library update | Pin `@whiskeysockets/baileys` in `package.json` to the last version that worked for you, or set `WA_LIB`. |
+| Menu looks plain | `BOT_FONT=none` is set. |
+| "Make the bot an admin first" | Group filters and group edits need the bot to be a group admin. |
+| Telegram bot is silent | `TG_TOKEN` is empty. |
 
 ---
 
-## 👨‍💻 DEVELOPER & PROJECT OWNER
+## Safety notes
 
-<div align="center">
-
-# WHITEKID TECHZW
-
-### 🇿🇼 ZIMBABWEAN DEVELOPER
-
-**Founder • Developer • Project Creator**
-
-WHITEKID PRIME is part of the WHITEKID TECH project ecosystem.
-
-I build bots, automation systems, web applications and developer tools with a vision of creating technology that stands out.
-
-**This is not just another bot. This is WHITEKID PRIME.**
-
-</div>
-
-### Connect with the developer
-
-- GitHub: https://github.com/whitekidtechzw-creator
-- Telegram: https://t.me/whitekid01
-- Repository: https://github.com/whitekidtechzw-creator/whitekid-prime-pair
+- Automating a personal WhatsApp account can get it **banned**. Use a spare number.
+- Keep `.env`, `data/` and session folders out of Git and out of any zip you share. They contain tokens and login sessions.
+- Give `ADMIN_TOKEN` a long random value, and treat `.sudo` like handing over the bot.
+- The bot is designed not to run arbitrary code: remote-exec and plugin-installer commands from other bots were deliberately left out.
 
 ---
 
-## 🌟 SUPPORT THE PROJECT
+## Credits and licence
 
-If you appreciate the work behind WHITEKID PRIME:
-
-- ⭐ Star this repository.
-- 🍴 Fork the project.
-- 🐛 Report bugs through GitHub Issues.
-- 💡 Suggest improvements.
-- 📢 Share the project with other developers.
-
-Every bit of support motivates further development.
+Built by **WhiteKid Tech** (Zimbabwe). Some commands were ported or rebuilt from Knightbot-MD (ISC licence) and Atlas-MD. Powered by [Baileys](https://github.com/WhiskeySockets/Baileys). See `LICENSE` and `APIS.md`.
 
 ---
 
-<div align="center">
+## Changelog
 
-# ⚡ WHITEKID PRIME
-
-**ENGINEERED BY WHITEKID TECHZW**
-
-*THE FUTURE HAD ALREADY COME.*
-
-🇿🇼 MADE WITH PASSION IN ZIMBABWE.
-
-</div>
+- **9.6.1** Sudo fix: users WhatsApp identifies by a LID in groups or chats are recognised, and `.sudo add/del @user` stores and removes both the phone number and the LID.
+- **9.6.0** Flash-MD pack (`wk11.js`, 60+ commands): WhatsApp tools (`block`, `unblock`, `blocklist`, `privacy`, `lastseen`, `mydp`, `mystatus`, `myonline`, `removedp`, `fullpp`, `onwa`, `bizprofile`, `vcard`, `details`, `mygroups`, `star`, `archive`, `save`), groups (`rename`, `req`, `approve`, `reject`, `disap1/7/90/-off`, `create`, `poll`), `hack`, `jokes`, `inspire`, `quotes`, `host`, `language`, Instagram `posts` and `story`, `video-dl`, `image-dl`, `playlist`, `trim`, and 19 more text logos (`dragonball`, `naruto`, `sunset`, `gold`, `frozen`...). New APIs: noobs-api, bk9, popcat, favqs, mollygram. Flash-MD's `eval`/`exec` and its embedded third-party API keys were not copied.
+- **9.5.0** Fixes: `.vv` now saves view-once media the moment it arrives, so it still works after the receiver opened it; `.savestatus` (`.savest`, `.sv`) rewritten (photo, video, voice note, sticker, status text; add `dm` to send it to yourself); reply-based `promote`, `demote`, `warn` and `kick` work again (the bot never filled in the replied-to message). Auto-update: the bot pulls new code from GitHub by itself (`UPDATE_REPO`), keeps every session and restarts without anyone pairing again. New `.update` owner command, supervisor with crash restart and automatic rollback of a bad update.
+- **9.4.0** View-once rewrite (`.vv`/`.rvo`/`.viewonce` now handle every WhatsApp wrapper, photos, videos and voice notes, with a cache for stripped quotes; new `.vv2` sends to your own chat). Sudo fixes: only the real owner can add or remove sudo users, `@mention`/reply/number all work, and owner/sudo checks also match the phone number WhatsApp gives in LID groups.
+- **9.3.1** Command names in the menu use the small-caps font.
+- **9.3** Automations: anti-badword, anti-tag, anti-call, PM blocker, auto-react, auto-typing, chatbot, sudo, top members.
+- **9.2** Knight/Atlas extras (`infogp`, `setgdesc`, `anularlink`, `clearsession`, `insult`) and many aliases; menu headers lose the counts.
+- **9.1** One-message menu with v7/v8/v9 commands merged into the matching sections; bounded antidelete cache; sessions keep retrying instead of being dropped; scheduled messages survive reconnects.
+- **9.0** Knightbot pack: image effects, text logos, anime and pies, fun texts, extra download sources.
+- **8.0** About 190 commands: downloaders, YouTube tools, converters, text-to-speech, stickers, reactions, group admin, extra AI.
+- **7.x** Flat layout like `astra-md-mini-v2-flat`, new menu and font, AI engine with fallbacks, new `.play`, web pairing page.

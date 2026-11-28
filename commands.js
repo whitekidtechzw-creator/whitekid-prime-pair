@@ -101,17 +101,21 @@ case 'menu': {
     const emblem = botImg && !/^https?:/i.test(botImg) ? botImg : config.RCD_IMAGE_PATH;
     const footer = '⌬ ' + UI.bold('Whitekid Prime');
     // ONE message: stats card on top, every category under it (a small emblem card is attached as the thumbnail)
-    const parts = UI.chunkSections(secs, 60000);
-    const full = UI.menuFull(header, secs, footer);
-    const thumb = await menuThumb(emblem);
-    const card = thumb ? { externalAdReply: { title: 'WHITEKID PRIME', body: `${await totalcmds()} commands · ${activePrefix}menu <category>`, thumbnail: thumb, mediaType: 1, renderLargerThumbnail: true, showAdAttribution: false, sourceUrl: config.USER_CHANNEL_URL || undefined } } : {};
+    const body = secs.map(x => x.text).join('\n\n') + '\n\n' + footer;
+    const fs = require('fs');
+    const hasPoster = config.MENU_IMAGE && fs.existsSync(config.MENU_IMAGE);
     try {
-        if (full.length > 60000) throw new Error('menu too long for one message');
-        await socket.sendMessage(from, { text: full, contextInfo: { ...fwd, ...card } }, { quoted: fakeCard });
+        if (hasPoster) {
+            // poster image + stats card as its caption, then every category right under it
+            await socket.sendMessage(from, { image: fs.readFileSync(config.MENU_IMAGE), caption: header, contextInfo: { ...fwd } }, { quoted: fakeCard });
+            for (const part of UI.chunkSections(secs, 3600)) { await socket.sendMessage(from, { text: part }, { quoted: fakeCard }); await delay(300); }
+            await socket.sendMessage(from, { text: footer }, { quoted: fakeCard });
+        } else {
+            await socket.sendMessage(from, { text: header + '\n\n' + body, contextInfo: { ...fwd } }, { quoted: fakeCard });
+        }
     } catch (e) {
-        console.error('[MENU one-message]', e.message);
-        try { await socket.sendMessage(from, { text: full.length <= 60000 ? full : header }, { quoted: fakeCard }); } catch (e2) { console.error('[MENU plain]', e2.message); }
-        if (full.length > 60000) for (const part of parts) { await socket.sendMessage(from, { text: part + '\n\n' + footer }, { quoted: fakeCard }); await delay(400); }
+        console.error('[MENU]', e.message);
+        try { await socket.sendMessage(from, { text: header + '\n\n' + body }, { quoted: fakeCard }); } catch (e2) { console.error('[MENU plain]', e2.message); }
     }
     break;
 }
@@ -1837,7 +1841,31 @@ case 'readmore': { if (!q) return reply(`Usage: ${activePrefix}readmore <text>`)
 // channelid command removed
 // fc/follow channel command removed
 case 'units': { await react('⚖️'); if (!q) return reply(`Usage: ${activePrefix}units <value> <from> <to>`); const val = parseFloat(args[0]), f2 = args[1]?.toLowerCase(), t2 = args[2]?.toLowerCase(); if (isNaN(val) || !f2 || !t2) return reply('⚠️ Invalid format.'); const conv = { 'km-miles': v => v * 0.621371, 'miles-km': v => v * 1.60934, 'kg-lbs': v => v * 2.20462, 'lbs-kg': v => v * 0.453592, 'm-ft': v => v * 3.28084, 'ft-m': v => v * 0.3048, 'c-f': v => v * 9 / 5 + 32, 'f-c': v => (v - 32) * 5 / 9 }; const key = `${f2}-${t2}`; if (conv[key]) await reply(`⚖️ *Conversion:*\n\n${val} ${f2} = ${conv[key](val).toFixed(4)} ${t2}`); else reply(`⚠️ Conversion "${f2}" to "${t2}" not supported.`); break; }
-case 'savestatus': case 'savest': case 'savesm': { await react('💾'); if (!msg.quoted) return reply('❗ Reply to a status to save it!'); try { const mediaSt = await downloadMediaMessage(msg.quoted, 'buffer', {}); const fileExt = msg.quoted?.message?.imageMessage ? 'jpg' : 'mp4'; const mimeType = msg.quoted?.message?.imageMessage ? 'image/jpeg' : 'video/mp4'; if (fileExt === 'jpg') await socket.sendMessage(from, { image: mediaSt, caption: `💾 Saved Status${WM}` }, { quoted: fakeCard }); else await socket.sendMessage(from, { document: mediaSt, mimetype: mimeType, fileName: `status_${Date.now()}.${fileExt}`, caption: `💾 Saved Status${WM}` }, { quoted: fakeCard }); await react('✅'); } catch (e) { reply(`⚠️ ${e.message}`); } break; } 
+case 'savestatus': case 'savest': case 'savesm': case 'ssave': case 'sv': {
+    await react('💾');
+    const S = require('./services'), ci = S.getContextInfo(msg.message), qm = ci && ci.quotedMessage;
+    if (!qm) return reply(`❗ Reply to a status (or any photo/video/voice note) with ${activePrefix}${command} to save it.\n\nOpen the status, swipe up to reply, and type the command.`);
+    const dest = (args[0] || '').toLowerCase() === 'dm' ? (socket.user.id.split(':')[0].split('@')[0] + '@s.whatsapp.net') : from;
+    try {
+        const found = S.findMedia(qm);
+        if (!found) {
+            const t = S.findText(qm);
+            if (!t) return reply('⚠️ That message has nothing to save (no photo, video, audio or text).');
+            await socket.sendMessage(dest, { text: `💾 *Saved status text*\n\n${t}` }, { quoted: fakeCard }); await react('✅'); return;
+        }
+        const { kind, obj } = found;
+        const buf = await S.voApi.download(obj, kind);
+        if (!buf || !buf.length) throw new Error('empty media (the status may have expired)');
+        const cap = `💾 Saved${obj.caption ? '\n' + obj.caption : ''}${WM}`;
+        if (kind === 'image') await socket.sendMessage(dest, { image: buf, caption: cap }, { quoted: fakeCard });
+        else if (kind === 'video') await socket.sendMessage(dest, { video: buf, caption: cap, mimetype: obj.mimetype || 'video/mp4' }, { quoted: fakeCard });
+        else if (kind === 'audio') await socket.sendMessage(dest, { audio: buf, mimetype: obj.mimetype || 'audio/ogg; codecs=opus', ptt: !!obj.ptt }, { quoted: fakeCard });
+        else if (kind === 'sticker') await socket.sendMessage(dest, { sticker: buf }, { quoted: fakeCard });
+        else await socket.sendMessage(dest, { document: buf, mimetype: obj.mimetype || 'application/octet-stream', fileName: obj.fileName || ('file_' + Date.now()) }, { quoted: fakeCard });
+        await react('✅');
+    } catch (e) { reply(`⚠️ Could not save it: ${e.message}`); }
+    break;
+}
 case 'imdb': { if (!q) return reply(`Usage: ${activePrefix}imdb <movie name>`); await react('⭐'); try { const res = await fetch(`https://api.popcat.xyz/imdb?q=${encodeURIComponent(q)}`); const json = await res.json(); const info = `🎬 *${json.title || 'N/A'}* (${json.year || 'N/A'})\n🎭 Genre: ${json.genres || 'N/A'}\n⭐ Rating: ${json.rating || 'N/A'} (${json.votes || 'N/A'} votes)\n📝 Plot: ${json.plot || 'N/A'}\n🎬 Director: ${json.director || 'N/A'}\n👨‍👩‍👧‍👦 Actors: ${json.actors || 'N/A'}\n⏱️ Runtime: ${json.runtime || 'N/A'}\n📅 Released: ${json.released || 'N/A'}`; if (json.poster) await socket.sendMessage(from, { image: { url: json.poster }, caption: info + WM }, { quoted: fakeCard }); else await reply(info); } catch (e) { reply(`⚠️ ${e.message}`); } break; }
 case 'blurface': { await react('🔇'); const qi6 = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage || msg.message; if (!qi6?.imageMessage && !msg.message?.imageMessage) return reply('❗ Reply to an image'); try { const imgObj = qi6?.imageMessage || msg.message.imageMessage; const s = await downloadContentFromMessage(imgObj, 'image'); let b = Buffer.from([]); for await (const c of s) b = Buffer.concat([b, c]); const imgUrl = await uploadSmartMedia(b, 'image/jpeg'); const { data } = await axios.get(`${config.NEXRAY_API}/tools/blurface?imageUrl=${encodeURIComponent(imgUrl)}`, { responseType: 'arraybuffer', timeout: 30000 }); await socket.sendMessage(from, { image: Buffer.from(data), caption: `🔇 *Face Blurred!*${WM}` }, { quoted: fakeCard }); } catch (e) { reply(`⚠️ ${e.message}`); } break; }
 case 'imagescanner': { await react('🔍'); const qiIs = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage || msg.message; if (!qiIs?.imageMessage && !msg.message?.imageMessage) return reply('❗ Reply to an image'); try { const imgObj = qiIs?.imageMessage || msg.message.imageMessage; const s = await downloadContentFromMessage(imgObj, 'image'); let b = Buffer.from([]); for await (const c of s) b = Buffer.concat([b, c]); const imgUrl = await uploadSmartMedia(b, 'image/jpeg'); const { data } = await axios.get(`${config.DAVID_API}/tools/imagescanner?imageUrl=${encodeURIComponent(imgUrl)}`, { timeout: 30000 }); const result = data?.result || data?.text || data?.description; if (result) await reply(`🔍 *Image Scanner:*\n\n${typeof result === 'string' ? result : JSON.stringify(result, null, 2)}`); else reply('⚠️ Could not analyse image.'); } catch (e) { reply(`⚠️ ${e.message}`); } break; }

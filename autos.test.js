@@ -52,6 +52,16 @@ let fail = 0; const ok = (c, m) => { if (!c) { fail++; console.log(' ✗', m); }
     const sudoMsg = { key: { id: 'x' }, message: { extendedTextMessage: { contextInfo: { mentionedJid: ['263789000333@s.whatsapp.net'] } } } };
     await cmd('sudo', ['add', '@263789000333'], { isOwner: true, isDevOverride: true, msg: sudoMsg }); ok(A.isSudo('263789000333'), 'sudo add by @mention');
     await cmd('sudo', ['del'], { isOwner: true, isDevOverride: true, msg: sudoMsg }); ok(!A.isSudo('263789000333'), 'sudo del by @mention');
+    // LID groups: the same person must match by phone number AND by LID
+    {
+        const gsock = { ...sock, groupMetadata: async () => ({ participants: [{ id: '55511122233344@lid', lid: '55511122233344@lid', phoneNumber: '263789000444@s.whatsapp.net' }] }) };
+        const lidMsg = { key: { id: 'x' }, message: { extendedTextMessage: { contextInfo: { mentionedJid: ['55511122233344@lid'] } } } };
+        await cmd('sudo', ['add'], { isOwner: true, isDevOverride: true, msg: lidMsg, socket: gsock });
+        ok(/\+263789000444 is now a sudo/.test(out.pop()), 'sudo add shows the real phone number for a LID mention');
+        ok(A.isSudo('263789000444') && A.isSudo('55511122233344'), 'sudo matches both the phone number and the LID');
+        await cmd('sudo', ['del'], { isOwner: true, isDevOverride: true, msg: lidMsg, socket: gsock });
+        ok(!A.isSudo('263789000444') && !A.isSudo('55511122233344'), 'sudo del removes both ids');
+    }
     await cmd('sudo', ['list'], { isOwner: true }); ok(/263789000111/.test(out.pop()), 'sudo list');
     await cmd('delmod', ['263789000111'], { isOwner: true, isDevOverride: true }); ok(!A.isSudo('263789000111'), 'delmod removes sudo');
 

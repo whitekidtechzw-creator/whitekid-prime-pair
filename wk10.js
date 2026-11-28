@@ -111,6 +111,21 @@ def('botx', ['chatbot'], 'on | off', async c => {
     if (v === null) return c.reply(`🤖 Chatbot here: ${state(autos.get().chatbot[c.from])}\n${c.isGroup ? 'In groups it answers when someone replies to it or @mentions it.' : 'It answers every message in this chat.'}\n\nUsage: ${c.activePrefix}chatbot on | off`);
     autos.setChatbot(c.from, v); await c.reply(`🤖 Chatbot is now ${state(v)} in this chat.`);
 });
+// WhatsApp may name a person by a LID or by a phone number. Work out every id of the same person so sudo matches in both cases.
+async function idsOf(c, jid) {
+    const bare = j => String(j || '').split('@')[0].split(':')[0];
+    const out = new Set(); let phone = '';
+    const add = (j, isPhone) => { const d = bare(j).replace(/\D/g, ''); if (d.length >= 7) { out.add(d); if (isPhone && !phone) phone = d; } };
+    add(jid, /@s\.whatsapp\.net$/.test(String(jid || '')));
+    if (c.isGroup && jid) {
+        try {
+            const m = await c.socket.groupMetadata(c.from);
+            const p = m.participants.find(x => [x.id, x.lid, x.jid, x.phoneNumber].some(v => v && bare(v) === bare(jid)));
+            if (p) for (const v of [p.id, p.lid, p.jid, p.phoneNumber]) add(v, /@s\.whatsapp\.net$/.test(String(v || '')) || (v && !String(v).includes('@') && v === p.phoneNumber));
+        } catch { /* metadata is optional */ }
+    }
+    return { ids: [...out], shown: phone || [...out][0] || '' };
+}
 def('botx', ['sudo', 'addmod', 'setmod', 'delmod', 'removemod', 'delsudo'], 'add | del | list  (@user, reply or number)', async c => {
     const cfg = require('./config').config;
     const me = String((c.socket.user && c.socket.user.id) || '').split(':')[0].split('@')[0];
@@ -130,14 +145,16 @@ def('botx', ['sudo', 'addmod', 'setmod', 'delmod', 'removemod', 'delsudo'], 'add
     const ctx = (c.msg && c.msg.message && c.msg.message.extendedTextMessage && c.msg.message.extendedTextMessage.contextInfo) || {};
     const jid = (ctx.mentionedJid && ctx.mentionedJid[0]) || ctx.participant || '';
     const typed = (c.args.slice(alias && /^(sudo)$/.test(alias) ? 1 : 0).join('').replace(/\D/g, ''));
-    const num = String(jid).split('@')[0].replace(/\D/g, '') || typed;
+    const who = jid ? await idsOf(c, jid) : { ids: typed ? [typed] : [], shown: typed };
+    const num = who.shown;
     if (!num) return c.reply(`Usage: ${c.activePrefix}${alias === 'sudo' ? 'sudo ' + sub : alias} @user  (or reply to them, or give a number with country code)`);
     if (sub === 'add') {
-        if (owners.includes(num)) return c.reply('ℹ️ That number is already an owner.');
-        if (!autos.addSudo(num)) return c.reply('⚠️ That does not look like a valid number.');
+        if (who.ids.some(n => owners.includes(n))) return c.reply('ℹ️ That number is already an owner.');
+        if (!who.ids.map(n => autos.addSudo(n)).some(Boolean)) return c.reply('⚠️ That does not look like a valid number.');
         return c.reply(`✅ +${num} is now a sudo user (can use owner commands).`);
     }
-    return c.reply(autos.delSudo(num) ? `✅ +${num} removed from sudo.` : `⚠️ +${num} was not a sudo user.`);
+    const removed = who.ids.map(n => autos.delSudo(n)).some(Boolean);
+    return c.reply(removed ? `✅ +${num} removed from sudo.` : `⚠️ +${num} was not a sudo user.`);
 });
 // view-once → owner DM (Knightbot .vv2): reveal quietly without posting in the chat
 def('botx', ['vv2', 'vvdm', 'vvowner'], '(reply to a view-once; owner only)', async c => {
