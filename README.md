@@ -145,6 +145,7 @@ Settings are saved in `data/autos.json`. The bot must be a **group admin** for a
 | `.setgdesc` · `.anularlink` · `.infogp` | admin / anyone | Set description, reset invite link, group info. |
 | `.chatbot on/off` | admin (groups) / owner (DMs) | AI replies; in groups only when someone replies to or @mentions the bot. |
 | `.anticall` · `.pmblocker` · `.autoreact` · `.autotyping` | owner | Reject calls, block private messages, react to messages, show "typing…". |
+| `.autobio on\|off\|set <text>\|reset` | owner | Keeps the bot's WhatsApp About updated every minute. Placeholders: `{time}` `{date}` `{uptime}` `{prefix}` `{bot}`. Set `AUTOBIO_INTERVAL` (seconds, min 30) to change the speed. |
 
 ---
 

@@ -86,6 +86,28 @@ flagCmd(['pmblocker'], 'pmblocker', '🚫 PM blocker', 'Blocks anyone who messag
 flagCmd(['autoreact', 'areact', 'autoreaction'], 'autoreact', '😎 Auto-react', 'Reacts to incoming messages with a random emoji.');
 flagCmd(['autotyping'], 'autotyping', '⌨️ Auto-typing', 'Shows "typing…" while the bot is working on a command.');
 
+// autobio — per bot number, owner only
+def('botx', ['autobio'], 'on | off | set <text> | reset', async c => {
+    if (needOwner(c)) return;
+    const num = autos.botNum(c.socket), p = c.activePrefix, cfg = autos.bioCfg(num);
+    const sub = (c.args[0] || '').toLowerCase();
+    const fresh = async () => { try { return await autos.applyBio(c.socket, true); } catch (e) { return null; } };
+    if (sub === 'set') {
+        const text = c.args.slice(1).join(' ').trim();
+        if (!text) return c.reply(`Usage: ${p}autobio set <text>\nPlaceholders: {time} {date} {uptime} {prefix} {bot}\nExample: ${p}autobio set 🤖 {bot} • 🕒 {time} • {uptime} up`);
+        autos.setBio(num, { text });
+        const now = cfg.on ? await fresh() : null;
+        return c.reply(`✅ Bio template saved (max ${autos.BIO_MAX} characters).${now ? `\nUpdated now: ${now}` : `\nTurn it on with ${p}autobio on`}`);
+    }
+    if (sub === 'reset') { autos.setBio(num, { text: '' }); return c.reply('✅ Bio template reset to the default.'); }
+    const v = onoff(sub);
+    if (v === null) return c.reply(`📝 Auto-bio: ${state(cfg.on)}\nKeeps the bot's WhatsApp About updated (time, date, uptime) about every minute.\n\nTemplate: ${cfg.text || autos.BIO_DEFAULT}\nPreview: ${autos.renderBio(num, cfg.text)}\n\nUsage:\n${p}autobio on | off\n${p}autobio set <text>   ({time} {date} {uptime} {prefix} {bot})\n${p}autobio reset`);
+    autos.setBio(num, { on: v });
+    if (!v) return c.reply('📝 Auto-bio is now ⚠️ OFF (the About text stays as it is until you change it with .bio).');
+    const now = await fresh();
+    await c.reply(now ? `📝 Auto-bio is now ✅ ON\nUpdated now: ${now}` : '📝 Auto-bio is ✅ ON, but WhatsApp did not accept the first update. It will retry every minute.');
+});
+
 def('grp', ['antitag'], 'on | off', async c => {
     if (needAdmin(c)) return;
     const v = onoff((c.args[0] || '').toLowerCase());

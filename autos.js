@@ -8,7 +8,7 @@ const fs = require('fs'), path = require('path');
 const { DATA_DIR } = require('./config');
 const FILE = path.join(DATA_DIR, 'autos.json');
 
-const DEFAULTS = () => ({ flags: { autoreact: false, autotyping: false, anticall: false, pmblocker: false }, antibadword: {}, antitag: {}, chatbot: {}, sudo: [], counts: {} });
+const DEFAULTS = () => ({ flags: { autoreact: false, autotyping: false, anticall: false, pmblocker: false }, antibadword: {}, antitag: {}, chatbot: {}, sudo: [], counts: {}, bio: {} });
 let S = DEFAULTS(), loaded = false, timer = null;
 
 function load() {
@@ -100,6 +100,55 @@ async function onMessage(x) {
     return false;
 }
 
+
+// ───── autobio: keeps the bot's WhatsApp "About" fresh (time, date, uptime) ─────
+// Settings are per bot number: bio[number] = { on, text }. {time} {date} {uptime} {prefix} {bot} are filled in on every update.
+const BIO_DEFAULT = '🤖 WHITEKID PRIME • ⏱ {uptime} • 🕒 {time} • {prefix}menu';
+const BIO_MAX = 139;   // WhatsApp's limit for the About text
+const BIO_EVERY = Math.max(30, Number(process.env.AUTOBIO_INTERVAL) || 60) * 1000;
+const botNum = sock => digits(String((sock && sock.user && sock.user.id) || '').split(':')[0].split('@')[0]);
+function bioCfg(num) { const b = load().bio || (S.bio = {}); if (!b[num]) b[num] = { on: false, text: '' }; return b[num]; }
+function setBio(num, patch) { Object.assign(bioCfg(num), patch); save(); }
+function fmtUp(sec) { sec = Math.max(0, Math.floor(sec)); const d = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60); return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m`; }
+function renderBio(num, template) {
+    const tz = 'Africa/Harare', now = new Date();
+    let started = 0, prefix = '.';
+    try { started = require('./store').socketCreationTime.get(num) || 0; } catch { /* optional */ }
+    try { prefix = require('./store').getCustomPrefix() || '.'; } catch { /* optional */ }
+    const up = started ? (Date.now() - started) / 1000 : process.uptime();
+    const vars = {
+        time: now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: tz }),
+        date: now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: tz }),
+        uptime: fmtUp(up), prefix, bot: 'WHITEKID PRIME'
+    };
+    const out = String(template || BIO_DEFAULT).replace(/\{(time|date|uptime|prefix|bot)\}/gi, (_, k) => vars[k.toLowerCase()]);
+    return [...out].slice(0, BIO_MAX).join('');   // spread = never cut an emoji in half
+}
+const lastBio = new Map();
+/** sets the About text for this socket; returns the text, or null when nothing was sent */
+async function applyBio(sock, force) {
+    const num = botNum(sock); if (!num || typeof sock.updateProfileStatus !== 'function') return null;
+    const cfg = bioCfg(num); if (!cfg.on && !force) return null;
+    const text = renderBio(num, cfg.text);
+    if (!force && lastBio.get(num) === text) return null;
+    await sock.updateProfileStatus(text);
+    lastBio.set(num, text);
+    return text;
+}
+/** called once per socket by the handler; stops by itself when that socket closes */
+function startBio(sock) {
+    if (!sock || !sock.ev || typeof sock.ev.on !== 'function') return;
+    let busy = false, failed = 0;
+    const t = setInterval(async () => {
+        if (busy) return; busy = true;
+        try { await applyBio(sock, false); failed = 0; }
+        catch (e) { if (++failed === 1 || failed % 20 === 0) console.error('[autobio]', e.message); }
+        busy = false;
+    }, BIO_EVERY);
+    if (t.unref) t.unref();
+    sock.ev.on('connection.update', u => { if (u && u.connection === 'close') clearInterval(t); });
+}
+
 // ───── calls & private chats ─────
 async function onCall(socket, calls) {
     if (!load().flags.anticall) return;
@@ -121,4 +170,4 @@ async function onPrivate(socket, from) {   // returns true if the sender was blo
     return true;
 }
 
-module.exports = { api, get, isSudo, addSudo, delSudo, setFlag, badCfg, setBad, setTag, setChatbot, hasBadWord, count, top, onMessage, onCall, onPrivate, _reset: () => { S = DEFAULTS(); loaded = true; } };
+module.exports = { api, get, bioCfg, setBio, renderBio, applyBio, startBio, botNum, BIO_DEFAULT, BIO_MAX, isSudo, addSudo, delSudo, setFlag, badCfg, setBad, setTag, setChatbot, hasBadWord, count, top, onMessage, onCall, onPrivate, _reset: () => { S = DEFAULTS(); loaded = true; } };

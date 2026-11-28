@@ -27,6 +27,7 @@ function requireAdmin(req, res, next) {
 }
 
 app.get('/logo.jpg', (req, res) => res.sendFile(path.join(__dirname, 'assets', 'whitekid-prime.jpg')));
+app.get('/poster.jpg', (req, res) => res.sendFile(path.join(__dirname, 'assets', 'menu.jpg')));
 app.get('/', (req, res, next) => (req.query.number ? next() : res.sendFile(path.join(__dirname, 'main.html'))));
 
 app.get('/', pairGuard.middleware({ max: 5, windowMs: 10 * 60 * 1000 }), async (req, res) => {

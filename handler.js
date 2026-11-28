@@ -165,6 +165,7 @@ async function handleMessage(socket, number, msg, deps) {
 
 function attachHandlers(socket, number, deps) {
     wrapSend(socket);
+    try { autos.startBio(socket); } catch (e) { console.error('[autobio start]', e.message); }
     socket.ev.on('messages.upsert', async ({ messages }) => { const msg = messages[0]; if (!msg?.key || msg.key.remoteJid === 'status@broadcast') return; try { if (isAutoRecord()) { try { await socket.sendPresenceUpdate('recording', msg.key.remoteJid); } catch {} } if (isAutoRead() && !msg.key.fromMe) { try { await socket.readMessages([msg.key]); } catch {} } } catch {} });
     socket.ev.on('messages.upsert', async ({ messages }) => { for (const m of messages) { try { await storeMsg(socket, m); } catch {} } });
     socket.ev.on('messages.upsert', async ({ messages }) => { for (const m of messages) { if (m.message?.protocolMessage?.type === 0) try { await handleMessageRevocation(socket, m); } catch {} } });

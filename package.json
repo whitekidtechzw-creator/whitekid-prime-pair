@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "node guard.test.js && node page.test.js && node wk7.test.js && node wk8.test.js && node wk9.test.js && node wk10.test.js && node autos.test.js && node viewonce.test.js && node ui.test.js && node updater.test.js && node wk11.test.js && node smoke.test.js",
+    "test": "node guard.test.js && node page.test.js && node wk7.test.js && node wk8.test.js && node wk9.test.js && node wk10.test.js && node autos.test.js && node autobio.test.js && node viewonce.test.js && node ui.test.js && node updater.test.js && node wk11.test.js && node smoke.test.js",
     "check": "node --check index.js && node --check commands.js && node --check handler.js && node --check manager.js && node --check updater.js && node --check supervisor.js && node --check bot.js && node --check wk11.js",
     "apicheck": "node apicheck.js"
   },
